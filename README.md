@@ -80,7 +80,8 @@ sh train.sh
 
 ## Inference
 We provide two inference methods: one based on user-specified coordinates and another based on a pair of input images.
-The model weights can be downloaded from [this Google Drive link](https://drive.google.com/drive/folders/1oQXisO1kS3MvihgCm090L-bAtywAspZF?usp=sharing) and put them in weight/model_ckpts.
+The model weights can be downloaded from [Huggingface](https://huggingface.co/datasets/WeijieMa/EyeReal/tree/main).
+Change the `eyeRealNet_weights` to the path to pretrained_model.pth.
 ### Inference Based on Coordinates
 ```bash
 # Script: inference_coordinates.py
@@ -90,6 +91,7 @@ The model weights can be downloaded from [this Google Drive link](https://drive.
 python inference_coordinates.py
 ```
 ### Inference Based on Input Images
+Change the `eyeRealNet_weights` to the path to pretrained_model.pth.
 ```bash
 # Script: inference_figures.py
 # - Update `eyeRealNet_weights` with your trained weights.
@@ -104,6 +106,7 @@ The data for evaluation and our pretrained model can be downloaded from [Hugging
 export PYTHONPATH=/path/to/EyeReal
 
 python eval/evaluate.py --ckpt_weights PRETRAINED_MODEL.pth --val_root VAL_ROOT
+
 # E.g.
 python eval/evaluate.py --ckpt_weights PRETRAINED_MODEL.pth --val_root /path/to/uco3d_processed_val_sample
 
