@@ -109,17 +109,12 @@ class EyeRealNet(nn.Module):
     def __init__(self, args, FOV=None, bilinear=True):
         super(EyeRealNet, self).__init__()
 
+        self.N_screen = args.N_screen
+
         self.ssim_calc = SSIM()
         self._init_geometry_(
             pattern_size=(args.image_height, args.image_width),
-            FOV=FOV,
-            thickness=args.thickness,
-            scale_physical2world=args.scale_physical2world,
-            physical_width = args.physical_width,
-            ground = args.ground,
-            ground_coefficient = args.ground_coefficient,
-            orientation = args.orientation,
-            delta=[args.delta_x, args.delta_y, args.delta_z]
+            FOV=FOV
         )
         self.aux_loss = args.aux_loss
         self.l1_loss = args.l1_loss
@@ -127,120 +122,59 @@ class EyeRealNet(nn.Module):
         self.use_mutex = args.mutex
         
         self.embed_dim = args.embed_dim
-        self.subnets = nn.ModuleList([LearnableDecompose(
-                in_channels=2*3, out_channels=3, 
+        self.subnets = LearnableDecompose(
+                in_channels=args.N_screen*2*3, out_channels=args.N_screen*3, 
                 base_c=args.embed_dim, bilinear=bilinear) 
-            for _ in range(3)])
     
     
-    def _init_geometry_(self, pattern_size, FOV, thickness, scale_physical2world, physical_width, ground, ground_coefficient, orientation, delta):
+    def _init_geometry_(self, pattern_size, FOV):
         '''
         thickness: the physical length of whole thickness between screens at both sides
         '''
-        self.FOV = FOV
-        self.N_screen = 3
         H, W = pattern_size
-        scale_pixel2world = scale_physical2world * physical_width / W
-        Z_world = thickness * scale_physical2world
-        if ground_coefficient != None:
-            z_min = Z_world * ground_coefficient
-        else:
-            z_min = ground
-        z_max = (z_min + Z_world)
-        W_w = W * scale_pixel2world
-        H_w = H * scale_pixel2world
+        self.FOV = FOV
         
-        if orientation == "xoy":
-            self.coord_screen_world = torch.stack([
-                torch.Tensor([[-W_w/2, H_w/2, z], [W_w/2, H_w/2, z], [-W_w/2, -H_w/2, z], [W_w/2, -H_w/2, z]
-            ]) for z in torch.linspace(z_min, z_max, self.N_screen).tolist()])
-        elif orientation == "xoz":
-            self.coord_screen_world = torch.stack([
-                torch.Tensor([[ -W_w/2,z, H_w/2], [ W_w/2, z,H_w/2], [-W_w/2,z,  -H_w/2], [W_w/2, z, -H_w/2]
-            ]) for z in torch.linspace(z_min, z_max, self.N_screen).tolist()])
-        elif orientation == "yox":
-            self.coord_screen_world = torch.stack([
-                torch.Tensor([[-H_w/2, -W_w/2, z], [-H_w/2, W_w/2, z], [H_w/2, -W_w/2, z], [H_w/2, W_w/2, z]
-            ]) for z in torch.linspace(z_min, z_max, self.N_screen).tolist()])
-        elif orientation == "yoz":
-            self.coord_screen_world = torch.stack([
-                torch.Tensor([[z, -W_w/2, H_w/2], [z, W_w/2, H_w/2], [z, -W_w/2, -H_w/2], [z, W_w/2, -H_w/2]
-            ]) for z in torch.linspace(z_min, z_max, self.N_screen).tolist()])
-        elif orientation == "zox":
-            self.coord_screen_world = torch.stack([
-                torch.Tensor([[H_w/2, z, -W_w/2], [H_w/2, z, W_w/2], [-H_w/2, z, -W_w/2], [-H_w/2, z, W_w/2]
-            ]) for z in torch.linspace(z_min, z_max, self.N_screen).tolist()])
-            
         self.coord_pixel_init = torch.Tensor([(0, 0), (W, 0), (0, H), (W, H)]).view(1,4,2).repeat(self.N_screen,1,1)
-        for index in range(3):
-            self.coord_screen_world[..., index] = self.coord_screen_world[..., index] + delta[index]
 
 
-    def transfrom_screen(self, coord_screen_world_input, a):
 
-        a_expanded = a.unsqueeze(0).repeat(3, 1, 1)
-
-        coord_screen_world_input_transposed = coord_screen_world_input.permute(0, 2, 1)
-
-        result = torch.matmul(a_expanded, coord_screen_world_input_transposed)
-
-        result = result.permute(0, 2, 1)
-
-        self.coord_screen_world = result
-        
-        return result
-
-    def forward(self, imgs: torch.Tensor, views: torch.Tensor, FOV=None):
+    def forward(self, imgs: torch.Tensor, views: torch.Tensor, coord_screen_world: torch.Tensor, FOV=None):
         if FOV is None: 
             FOV = self.FOV
         # imgs: B, N_in, 3, H, W
         # view: B, N_in, 4, 4
-        # self.coord_screen_world: N_s 4 3
+        # coord_screen_world: B N_s 4 3
         B, N_in, C_rgb, H, W = imgs.shape
         N_s = self.N_screen
         # B N_in 3 H W -> B*N_s*N_in 3 H W
+        # import pdb;pdb.set_trace()
         x, _ = self.view_tranform(
             imgs.view(B, 1, N_in, C_rgb, H, W).repeat(1, N_s, 1, 1, 1, 1).flatten(0, 2),
             views.view(B, 1, N_in, 4, 4).repeat(1, N_s, 1, 1, 1).flatten(0, 2), FOV,
-            self.coord_screen_world.view(1, N_s, 1, 4, 3).repeat(B, 1, N_in, 1, 1).flatten(0, 2),
+            coord_screen_world.view(B, N_s, 1, 4, 3).repeat(1, 1, N_in, 1, 1).flatten(0, 2),
             self.coord_pixel_init.view(1, N_s, 1, 4, 2).repeat(B, 1, N_in, 1, 1).flatten(0, 2),
             reverse=True,
         )
         # B*N_s*N 3 H W -> B*N_s N*3 H W -> B*N_s C H W
 
 
-        x = x.view(B, N_s, N_in*C_rgb, H, W)
-        patterns = torch.stack([self.subnets[i](x[:, i]) for i in range(self.N_screen)], dim=1)
+        x = x.view(B, N_s*N_in*C_rgb, H, W)
+        
+        patterns = self.subnets(x)
+        patterns = patterns.view(B, N_s, C_rgb, H, W)
 
         
         patterns = torch.sigmoid(patterns) - 0.2
 
         return patterns
-    
-    def calibrate(self, imgs, views, FOV=None):
-        if FOV is None: 
-            FOV = self.FOV
-        # imgs: B, N_in, 3, H, W
-        # view: B, N_in, 4, 4
-        # self.coord_screen_world: N_s 4 3
-        B, N_in, C_rgb, H, W = imgs.shape
-        N_s = self.N_screen
-        # B N_in 3 H W -> B*N_s*N_in 3 H W
-        x, _ = self.view_tranform(
-            imgs.view(B, 1, N_in, C_rgb, H, W).repeat(1, N_s, 1, 1, 1, 1).flatten(0, 2),
-            views.view(B, 1, N_in, 4, 4).repeat(1, N_s, 1, 1, 1).flatten(0, 2), FOV,
-            self.coord_screen_world.view(1, N_s, 1, 4, 3).repeat(B, 1, N_in, 1, 1).flatten(0, 2),
-            self.coord_pixel_init.view(1, N_s, 1, 4, 2).repeat(B, 1, N_in, 1, 1).flatten(0, 2),
-            reverse=True,
-        )
 
-        return x
     
     @staticmethod
     def view_tranform(imgs, view, FOV, coord_src, coord_src_img, reverse=False):
         N, _, H, W = imgs.shape
         fx = W/2 / math.tan(FOV/2)
-        coord_src_homo = torch.cat([coord_src, torch.ones(N,4,1)], dim=-1).to(imgs.device)
+        # import pdb;pdb.set_trace()
+        coord_src_homo = torch.cat([coord_src.cpu(), torch.ones(N,4,1)], dim=-1).to(imgs.device)
         coord_dst = torch.matmul(torch.inverse(view)[:, None], coord_src_homo[..., None]).squeeze(-1)[..., :3] # N 4 3
         u = (-fx*coord_dst[..., [0]]/coord_dst[..., [2]] + W/2)
         v = (fx*coord_dst[..., [1]]/coord_dst[..., [2]] + H/2)
@@ -265,7 +199,7 @@ class EyeRealNet(nn.Module):
 
         return imgs_new, masks_new
     
-    def aggregation(self, patterns=None, views=None, FOV=None):
+    def aggregation(self, patterns=None, views=None, coord_screen_world=None, FOV=None):
         
 
         # patterns: B N_s 3 H W
@@ -277,7 +211,7 @@ class EyeRealNet(nn.Module):
         patterns_new, masks_new = self.view_tranform(
             patterns.view(B, N_s, 1, C_rgb, H, W).repeat(1, 1, N_in, 1, 1, 1).flatten(0, 2), 
             views.view(B, 1, N_in, 4, 4).repeat(1, N_s, 1, 1, 1).flatten(0, 2), FOV,
-            self.coord_screen_world.view(1, N_s, 1, 4, 3).repeat(B, 1, N_in, 1, 1).flatten(0, 2), 
+            coord_screen_world.view(B, N_s, 1, 4, 3).repeat(1, 1, N_in, 1, 1).flatten(0, 2), 
             self.coord_pixel_init.view(1, N_s, 1, 4, 2).repeat(B, 1, N_in, 1, 1).flatten(0, 2),
         )
         patterns_new = patterns_new.view(B, N_s, N_in, C_rgb, H, W)
@@ -289,18 +223,25 @@ class EyeRealNet(nn.Module):
 
         return results, masks
     
-    def get_loss(self, patterns, gt, views, FOV=None, return_preds=False):
+    def get_loss(self, patterns, gt, views, coord_screen_world, FOV=None, return_preds=False):
         
 
         if FOV is None:
             FOV = self.FOV
         # patterns: B N_s 3 H W
         # views: B N_in 4 4
-        results, masks = self.aggregation(patterns=patterns, views=views, FOV=FOV)
+        results, masks = self.aggregation(patterns=patterns, views=views, coord_screen_world=coord_screen_world, FOV=FOV)
 
 
         loss = F.mse_loss(results*masks, gt*masks)
-        psnr = get_PSNR(loss.item(), masks)
+        if gt.min() < 0:
+            psnr_term = F.mse_loss((results*0.5+0.5)*masks, (gt*0.5+0.5)*masks).item()
+        else:
+            psnr_term = loss.item()
+        psnr = get_PSNR(psnr_term, masks)
+        if math.isnan(psnr) or math.isinf(psnr):
+            psnr=0
+            # import pdb;pdb.set_trace()
 
         outs = dict(loss_mse=loss, PSNR=psnr)
         if self.l1_mutex or self.use_mutex:
@@ -311,10 +252,10 @@ class EyeRealNet(nn.Module):
             outs['preds'] = results.detach().clone().reshape(*gt.shape)
         return outs
 
-    def get_prediction(self, patterns, predict_views, FOV=None):
+    def get_prediction(self, patterns, predict_views, coord_screen_world, FOV=None):
         if FOV is None:
             FOV = self.FOV
-        return self.aggregation(patterns, predict_views, FOV)[0]
+        return self.aggregation(patterns, predict_views, coord_screen_world, FOV)[0]
 
 
 

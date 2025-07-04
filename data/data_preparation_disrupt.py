@@ -9,11 +9,51 @@ from config.args import get_gaussian_parser
 
 import numpy as np
 
+
 FOV = 40
 R_min, R_max = 80, 150
 num = 1000
-phi_min, phi_max = 60, 90
-theta_min, theta_max = 40, 140 
+phi_min, phi_max = 60, 90 
+theta_min, theta_max = 40, 140  
+
+def _apply_head_pose_noise(
+    eye1: tuple[float, float, float],
+    eye2: tuple[float, float, float],
+    max_yaw: float = 10.0,
+    max_pitch: float = 10.0,
+    max_roll: float = 10.0,
+):
+
+
+    # Sample Euler angles in degrees and convert to radians
+    yaw = math.radians(random.uniform(-max_yaw, max_yaw))
+    pitch = math.radians(random.uniform(-max_pitch, max_pitch))
+    roll = math.radians(random.uniform(-max_roll, max_roll))
+
+    # Rotation matrices (Z-YX convention: roll around z, pitch around x, yaw around y)
+    Rz = np.array([
+        [math.cos(roll), -math.sin(roll), 0],
+        [math.sin(roll), math.cos(roll), 0],
+        [0, 0, 1],
+    ])
+    Rx = np.array([
+        [1, 0, 0],
+        [0, math.cos(pitch), -math.sin(pitch)],
+        [0, math.sin(pitch), math.cos(pitch)],
+    ])
+    Ry = np.array([
+        [math.cos(yaw), 0, math.sin(yaw)],
+        [0, 1, 0],
+        [-math.sin(yaw), 0, math.cos(yaw)],
+    ])
+
+    # Combined rotation matrix
+    R = Rz @ Rx @ Ry
+
+    eye1_rot = R @ np.asarray(eye1)
+    eye2_rot = R @ np.asarray(eye2)
+
+    return tuple(np.round(eye1_rot, 3)), tuple(np.round(eye2_rot, 3))
 
 
 def randomize(vertical, orientation, scale_physical2world):
@@ -40,7 +80,6 @@ def randomize(vertical, orientation, scale_physical2world):
     sign = -1 if d <= 0 else 1
     delta = abs(math.atan(0.5*eye_distance/d))
     r = math.sqrt(d**2 + (0.5*eye_distance)**2) * sign
-    
 
     if orientation == "xoy":
         z1 = round(r*math.sin(theta-delta), 3)
@@ -69,6 +108,14 @@ def randomize(vertical, orientation, scale_physical2world):
         z2 = round(r*math.cos(theta+delta), 3)
     (x1, y1, z1), (x2, y2, z2) = (x1, y1, z1), (x2, y2, z2)
 
+    (x1, y1, z1), (x2, y2, z2) = _apply_head_pose_noise(
+        (x1, y1, z1),
+        (x2, y2, z2),
+        max_yaw=10.0,
+        max_pitch=10.0,
+        max_roll=10.0,
+    )
+
     return (x1, y1, z1), (x2, y2, z2)
 
 if __name__ == "__main__":
@@ -85,15 +132,13 @@ if __name__ == "__main__":
 
         scene_name = gs.split('.')[0]
         
-
         from config.args import get_parser
         parser = get_parser()
         args = parser.parse_args()
         args.scene = scene_name
         init_scene_args(args=args)
 
-
-        file_path = 'dataset/scene_data_no_disrupt/{}/'.format(args.scene)
+        file_path = 'dataset/scene_data_disrupt/{}/'.format(args.scene)
 
         if 'museum' in scene_name or 'room_floor' in scene_name:
             num = 1500
@@ -106,16 +151,13 @@ if __name__ == "__main__":
         data_path = os.path.join(file_path, data_folder)
         os.makedirs(data_path, exist_ok=True)
 
-
         from tqdm import tqdm
         import torchvision
         for i in tqdm(range(num)):
-
             eye1, eye2 = randomize(args.vertical, args.orientation, args.scale_physical2world)
             eye1_t = torch.tensor(eye1)
             eye2_t = torch.tensor(eye2)
             
-
             eye1_view = eye2world_pytroch(args.vertical, eye1_t).cuda()
             eye1_img = render.render_from_view(eye1_view)
             torchvision.utils.save_image(
@@ -123,7 +165,6 @@ if __name__ == "__main__":
                 data_path + "/" + 'pair{}_x{}_y{}_z{}_{}'.format(
                     i, round(eye1[0], 3), round(eye1[1], 3), round(eye1[2], 3), 0) + ".jpg")
             
-
             eye2_view = eye2world_pytroch(args.vertical, eye2_t).cuda()
             eye2_img = render.render_from_view(eye2_view)
             torchvision.utils.save_image(

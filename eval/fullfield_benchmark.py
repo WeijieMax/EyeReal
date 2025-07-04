@@ -1,6 +1,6 @@
 import sys
 from lib.NTF.train_NTF import *
-from train_eyeReal import *
+from train_eyeReal_fp32 import *
 from data.dataset import *
 from config.args import get_parser
 
@@ -13,6 +13,34 @@ from torchvision import transforms as T
 from tqdm import trange
 import gc
 import time
+from config.scene_dict import *
+
+
+def init_scene_args(args):
+
+    if args.scene in scene_dict:
+        arg_dict = scene_dict[args.scene]
+
+        args.scale_physical2world = arg_dict["scale_physical2world"]
+        args.thickness = arg_dict["thickness"]
+        args.vertical = arg_dict["vertical"]
+        args.orientation = arg_dict["orientation"]
+
+        if "physical_width" in arg_dict:
+            args.physical_width = arg_dict["physical_width"]
+        if "ground_coefficient" in arg_dict:
+            args.ground_coefficient = arg_dict["ground_coefficient"]
+        if "ground" in arg_dict:
+            args.ground = arg_dict["ground"]
+        if "delta_x" in arg_dict:
+            args.delta_x = arg_dict["delta_x"]
+        if "delta_y" in arg_dict:
+            args.delta_y = arg_dict["delta_y"]
+        if "delta_z" in arg_dict:
+            args.delta_z = arg_dict["delta_z"]
+    else:
+        raise ValueError("wrong input scene name")
+
 
 def eval_ntf(args):
     args.train_NTF = True
@@ -109,21 +137,23 @@ def eval_eyeReal(args):
     FOV = 40 / 180 * math.pi
     args.scene = 'lego_bulldozer'
     args.train_NTF = False
-    args.ckpt_weights = 'weight\model_ckpts\lego_bulldozer.pth'
+    args.ckpt_weights = '/fs-computility/ai4chem/maweijie/eyemulti/outputs/data30+17_mutex-lr0.005-ep20-2025-06-27-15:31:13/model_best_10_train.pth'
+    args.embed_dim=32
+    args.N_screen = 3
 
     init_scene_args(args)
     args.scale_physical2world=0.5/6
     transform = get_transform(args)
     model = EyeRealNet(args=args, FOV=FOV)
     model.cuda()
-    checkpoint = torch.load(args.ckpt_weights, map_location='cpu')
+    checkpoint = torch.load(args.ckpt_weights, map_location='cpu', weights_only=False)
     model.load_state_dict(checkpoint['model'])
     model.eval()
     psnr_res = []
     ssim_res = []
     for start in range(10, 150, 20):
         
-        args.data_path = "dataset/eval/lego_bulldozer/lego_bulldozer200_scale_0.083_R_{}_{}_FOV_40_theta_40_140_phi_60_120".format(start, start+20)
+        args.data_path = "/fs-computility/ai4chem/maweijie/Eyereal_paper/lego_bulldozer"
         psnr, ssim = calc_eyeReal(args=args, model=model, transform=transform, FOV=FOV)
         psnr_res.append(psnr)
         ssim_res.append(ssim)
@@ -142,5 +172,5 @@ if __name__ == '__main__':
 
     parser = get_parser()
     args = parser.parse_args()
-    eval_ntf(args)
+    # eval_ntf(args)
     eval_eyeReal(args)

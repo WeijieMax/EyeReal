@@ -1,0 +1,8 @@
+weight/
+outputs/
+dataset/
+.vscode/
+img/
+pages/
+diff-gaussian-rasterization/
+*.pyc
