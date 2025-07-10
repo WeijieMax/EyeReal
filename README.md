@@ -111,3 +111,62 @@ python eval/evaluate.py --ckpt_weights PRETRAINED_MODEL.pth --val_root VAL_ROOT
 python eval/evaluate.py --ckpt_weights PRETRAINED_MODEL.pth --val_root /path/to/uco3d_processed_val_sample
 
 ```
+
+## Experiment
+
+First, put the pretrained_model.pth  in the path weight\model_ckpts\pretrained_model.pth\
+Then, put the eval dataset in the path dataset\eval\lego_bulldozer
+
+### 3D-distribute
+
+
+```bash
+# data preparation
+python experiment\3D-distribute\data_create.py 
+# calculate psnr
+python experiment\3D-distribute\calc_psnr.py
+```
+
+### contour
+
+
+```bash
+
+python experiment\contour\calc_contour.py
+
+```
+### depth
+
+
+```bash
+python experiment\depth\calc_depth.py
+
+```
+
+### DNN
+
+First, you need install some packages
+
+```bash
+pip install chainer
+# if env has cuda11
+pip install cupy-cuda11x
+python -m cupyx.tools.install_library --library cudnn --cuda 11.x
+```
+
+```bash
+# data preparation
+python experiment\DNN\data_create_DNN.py
+# calculate psnr
+python experiment\DNN\calc_DNN.py
+#calculate time
+python experiment\DNN\time_DNN.py
+```
+
+### NTF
+
+
+```bash
+# calculate psnr
+python experiment\NTF\calc_NTF.py
+```
