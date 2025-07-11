@@ -10,11 +10,12 @@ import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 from displaynet_NTF import DisplayNetNTF
 import torch.nn.functional as F
-
+import gc
 # from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms as T
 import wandb
-
+from data.render import GaussianRender
+from config.args import get_gaussian_parser
 def sort_key(s):
     # "pair0_x5.896_y45.396_z-24.465_left.jpg"
     pairs = s.split('_')
@@ -183,24 +184,37 @@ def init_scene_args(args):
 
     return coord_screen_world
 def update_two_views(model:DisplayNetNTF, iteration, data, device, output_path):
-    
-    
-    images, views, mask_views = data
-    images, views, mask_views = images.to(device), views.to(device), mask_views.to(device)
-    exe_time = 0
-    for i in range(iteration):
-        start_time = time.time()
-        model.update(views, images)
-        exe_time += time.time() - start_time
+    with torch.no_grad():
+        render = GaussianRender(
+            parser=get_gaussian_parser(),
+            sh_degree=3, 
+            gaussians_path=r"weight\gaussian_ply\lego_bulldozer.ply",
+            white_background=True, FOV=40 / 180 * math.pi, render_image_size=(1080,1920))
+        exe_time = 0
 
-    start_time = time.time()
+        images_, views, mask_views = data
+        views, mask_views = views.to(device), mask_views.to(device)
+
+        start_time1 = time.time()
+        images = torch.stack([render.render_from_view(mask_view) for mask_view in mask_views])
+        exe_time += time.time() - start_time1
+
+    for i in range(iteration):
+        start_time2 = time.time()
+        model.update(views, images)
+        exe_time += time.time() - start_time2
+
+
     results, _ = model.getResults(views, images)
     masks = get_masks(images, mask_views)
     
     psnr = model.get_PSNR(F.mse_loss(results*masks, images*masks))
     ssim = model.ssim_calc(results*masks, images*masks)
-    exe_time += time.time() - start_time
 
+    # -----释放本地变量-----
+    del images_, views, mask_views, images, results, masks, render
+    gc.collect()                 # Python显式垃圾回收
+    torch.cuda.empty_cache()     # 释放PyTorch空闲显存
 
     return psnr,ssim,exe_time
 
@@ -253,6 +267,8 @@ def main(args):
         f.write("{}_stddev_ssim: {}\n".format( exp_name, torch.std(ssim_t)))
         f.write("{}_stddev_time: {}\n".format( exp_name, torch.std(time_t)))
         
+
+
 
 from tqdm import trange
 from config.args import get_parser
