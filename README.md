@@ -117,35 +117,35 @@ python eval/evaluate.py --ckpt_weights PRETRAINED_MODEL.pth --val_root /path/to/
 First, put the pretrained_model.pth  in the path weight\model_ckpts\pretrained_model.pth\
 Then, put the eval dataset in the path dataset\eval\lego_bulldozer
 
-### 3D-distribute
+### Seamless ultrawide visualization
 
 
 ```bash
 # data preparation
-python experiment\3D-distribute\data_create.py 
+python experiment\seamless_ultrawide_visualization\data_create.py 
 # calculate psnr
-python experiment\3D-distribute\calc_psnr.py
+python experiment\seamless_ultrawide_visualization\calc_psnr.py
 ```
 
-### contour
+### Benchmark for view-segmeted automultiscopy
 
 
 ```bash
 
-python experiment\contour\calc_contour.py
+python experiment\benchmark_for_view_segmeted_automultiscopy\calc_eye_neighborhood.py
 
 ```
-### depth
+### Focal discrimination for depth perceptual continuity
 
 
 ```bash
-python experiment\depth\calc_depth.py
+python experiment\focal_discrimination\calc_focal_stack.py
 
 ```
 
-### DNN
+### Benchmark for view-dense automultiscopy (Neural representative)
 
-First, you need install some packages
+First, need install some packages
 
 ```bash
 pip install chainer
@@ -156,17 +156,17 @@ python -m cupyx.tools.install_library --library cudnn --cuda 11.x
 
 ```bash
 # data preparation
-python experiment\DNN\data_create_DNN.py
+python experiment\benchmark_for_view_dense_automultiscopy_neural\data_create_DNN.py
 # calculate psnr
-python experiment\DNN\calc_DNN.py
+python experiment\benchmark_for__view_dense_automultiscopy_neural\calc_DNN.py
 #calculate time
-python experiment\DNN\time_DNN.py
+python experiment\benchmark_for_view_dense_automultiscopy_neural\time_DNN.py
 ```
 
-### NTF
+### Benchmark for view-dense automultiscopy (Iterative representative)
 
 
 ```bash
 # calculate psnr
-python experiment\NTF\calc_NTF.py
+python experiment\benchmark_for_view_dense_automultiscopy_iterative\calc_NTF.py
 ```
