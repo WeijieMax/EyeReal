@@ -250,7 +250,7 @@ def readColmapSceneInfo(path, images, eval, llffhold=8):
     except:
         pcd = None
     
-    # import pdb;pdb.set_trace()
+    
     scene_info = SceneInfo(point_cloud=pcd,
                            train_cameras=train_cam_infos,
                            test_cameras=test_cam_infos,

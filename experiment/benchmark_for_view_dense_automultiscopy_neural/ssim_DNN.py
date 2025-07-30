@@ -8,95 +8,95 @@ import cupy as cp
 
 
 def gaussian(window_size, sigma):
-    """生成一维高斯窗口"""
+    """Generate one-dimensional Gaussian window"""
     gauss = cp.array([exp(-(x - window_size//2)**2 / float(2*sigma**2)) 
                      for x in range(window_size)])
     return gauss / gauss.sum()
 
 def create_window(window_size, channel):
-    """创建二维高斯窗口"""
+    """Create two-dimensional Gaussian window"""
     _1D_window = gaussian(window_size, 1.5).reshape(-1, 1)
     _2D_window = cp.outer(_1D_window, _1D_window.T)
-    return _2D_window.astype(cp.float32)  # 返回2D窗口，不添加额外维度
+    return _2D_window.astype(cp.float32)  # Return 2D window, without adding extra dimensions
 
 def _ssim(img1, img2, window, window_size, channel, size_average=True):
-    """计算SSIM核心函数"""
-    # 像素值归一化到0~1范围
+    """Calculate SSIM core function"""
+    # Normalize pixel values to 0~1 range
     img1 = img1.astype(cp.float32) / 255.0
     img2 = img2.astype(cp.float32) / 255.0
     
-    # 修复：确保图像尺寸匹配
+    # Fix: ensure image dimensions match
     # min_height = min(img1.shape[0], img2.shape[0])
     # min_width = min(img1.shape[1], img2.shape[1])
     # img1 = img1[:min_height, :min_width]
     # img2 = img2[:min_height, :min_width]
     
-    # 添加批次和通道维度（如果需要）
-    if len(img1.shape) == 2:  # 灰度图
+    # Add batch and channel dimensions (if needed)
+    if len(img1.shape) == 2:  # Grayscale image
         img1 = img1[cp.newaxis, cp.newaxis, :, :]
         img2 = img2[cp.newaxis, cp.newaxis, :, :]
-    elif len(img1.shape) == 3:  # 彩色图
-        # 转换格式为 (C, H, W)
+    elif len(img1.shape) == 3:  # Color image
+        # Convert format to (C, H, W)
         img1 = img1.transpose(2, 0, 1)[cp.newaxis, :, :, :]
         img2 = img2.transpose(2, 0, 1)[cp.newaxis, :, :, :]
     
-    # 更新通道数
+    # Update channel count
     _, channel, height, width = img1.shape
 
 
     def conv2d(input_img, kernel):
         
         result = cp.zeros_like(input_img)
-        for b in range(input_img.shape[0]):  # 遍历批次
-            for c in range(input_img.shape[1]):  # 遍历通道
-                # 直接使用'same'模式卷积，不手动填充
+        for b in range(input_img.shape[0]):  # Iterate through batches
+            for c in range(input_img.shape[1]):  # Iterate through channels
+                # Directly use 'same' mode convolution, no manual padding
                 result[b, c] = cu_convolve2d(input_img[b, c], kernel, 
                                          mode='same', boundary='symm')
         return result
 
-    # 计算局部均值
+    # Calculate local means
     mu1 = conv2d(img1, window)
     mu2 = conv2d(img2, window)
 
-    # 计算中间项
+    # Calculate intermediate terms
     mu1_sq = mu1 ** 2
     mu2_sq = mu2 ** 2
     mu1_mu2 = mu1 * mu2
 
-    # 计算局部方差和协方差
+    # Calculate local variance and covariance
     sigma1_sq = conv2d(img1*img1, window) - mu1_sq
     sigma2_sq = conv2d(img2*img2, window) - mu2_sq
     sigma12 = conv2d(img1*img2, window) - mu1_mu2
 
-    # SSIM常数（归一化后R=1）
+    # SSIM constants (R=1 after normalization)
     C1 = (0.01 * 1) ** 2
     C2 = (0.03 * 1) ** 2
 
-    # 计算SSIM映射
+    # Calculate SSIM mapping
     numerator = (2 * mu1_mu2 + C1) * (2 * sigma12 + C2)
     denominator = (mu1_sq + mu2_sq + C1) * (sigma1_sq + sigma2_sq + C2)
-    ssim_map = numerator / (denominator + 1e-8)  # 避免除零错误
-    ssim_map = cp.clip(ssim_map, 0, 1)  # 限制在0~1之间
+    ssim_map = numerator / (denominator + 1e-8)  # Avoid division by zero
+    ssim_map = cp.clip(ssim_map, 0, 1)  # Limit to range 0~1
 
-    # 返回平均值
+    # Return average value
     return cp.mean(ssim_map)
 
 class SSIM:
-    """SSIM计算类"""
+    """SSIM calculation class"""
     def __init__(self, window_size=11, size_average=True):
         self.window_size = window_size
         self.size_average = size_average
-        self.window = create_window(window_size, 1)  # 创建2D窗口
+        self.window = create_window(window_size, 1)  # Create 2D window
     
     def __call__(self, img1, img2):
-        # 确保图像尺寸匹配
+        # Ensure image dimensions match
         if img1.shape != img2.shape:
-            # 裁剪到相同尺寸
+            # Crop to the same size
             min_height = min(img1.shape[0], img2.shape[0])
             min_width = min(img1.shape[1], img2.shape[1])
             img1 = img1[:min_height, :min_width]
             img2 = img2[:min_height, :min_width]
         
         return _ssim(img1, img2, self.window, 
-                    self.window_size, 0, self.size_average)  # channel参数已移除
+                    self.window_size, 0, self.size_average)  # channel parameter has been removed
 

@@ -94,7 +94,7 @@ def init_scene_args(args):
     delta[0] = arg_dict.get('delta_x') if arg_dict.get('delta_x') else 0
     delta[1] = arg_dict.get('delta_y') if arg_dict.get('delta_x') else 0
     delta[2] = arg_dict.get('delta_z') if arg_dict.get('delta_x') else 0
-    # import pdb;pdb.set_trace()
+    
     coord_screen_world = get_screen_coords_world(
         thickness = arg_dict.get('thickness'), 
         scale_physical2world = arg_dict.get('scale_physical2world'), 

@@ -97,7 +97,7 @@ def get_screen_coords_world(args, N_screen=3):
 
     H, W = args.image_height, args.image_width
     
-    # 获取场景参数
+    # Get scene parameters
     if hasattr(args, 'physical_width') and args.physical_width is not None:
         physical_width = args.physical_width
     else:

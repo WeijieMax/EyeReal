@@ -47,7 +47,7 @@ from torchvision.transforms.functional import perspective
 def view_tranform(imgs, view, coord_src, coord_src_img, FOV=40/180*math.pi):
         N, _, H, W = imgs.shape
         fx = W/2 / math.tan(FOV/2)
-        # import pdb;pdb.set_trace()
+        
         coord_src_homo = torch.cat([coord_src.cpu(), torch.ones(N,4,1)], dim=-1).to(imgs.device)
         # coord_dst = torch.matmul(torch.inverse(view)[:, None], coord_src_homo[..., None]).squeeze(-1)[..., :3] # N 4 3
         coord_dst = torch.matmul(torch.inverse(view.float())[:, None], coord_src_homo.float()[..., None]).squeeze(-1)[..., :3] # N 4 3
@@ -68,7 +68,7 @@ def get_masks(imgs=None, views=None):
         views: (B, N_in,  4, 4)
         coord_screen_world: (N_s, 4, 3)
         coord_pixel_init:   (N_s, 4, 2)
-        返回
+        Returns
         masks: (N_in , C_rgb H, W)   
         """
 
@@ -84,7 +84,7 @@ def get_masks(imgs=None, views=None):
             
 
         masks_new = masks_new.reshape(N_in, N_s, C_rgb, H, W)
-        # 在 N_s 维度上做乘积（prod），得到 (N_in, H, W, C_rgb)
+        # Perform product along N_s dimension, resulting in (N_in, H, W, C_rgb)
         masks = masks_new.prod(dim=1)
 
         return masks
@@ -171,7 +171,7 @@ def init_scene_args(args):
     delta[0] = arg_dict.get('delta_x') if arg_dict.get('delta_x') else 0
     delta[1] = arg_dict.get('delta_y') if arg_dict.get('delta_x') else 0
     delta[2] = arg_dict.get('delta_z') if arg_dict.get('delta_x') else 0
-    # import pdb;pdb.set_trace()
+    
     coord_screen_world = get_screen_coords_world(
         thickness = arg_dict.get('thickness'), 
         scale_physical2world = arg_dict.get('scale_physical2world'), 
@@ -211,10 +211,10 @@ def update_two_views(model:DisplayNetNTF, iteration, data, device, output_path):
     psnr = model.get_PSNR(F.mse_loss(results*masks, images*masks))
     ssim = model.ssim_calc(results*masks, images*masks)
 
-    # -----释放本地变量-----
+    # -----Release local variables-----
     del images_, views, mask_views, images, results, masks, render
-    gc.collect()                 # Python显式垃圾回收
-    torch.cuda.empty_cache()     # 释放PyTorch空闲显存
+    gc.collect()                 # Explicit Python garbage collection
+    torch.cuda.empty_cache()     # Free PyTorch CUDA memory
 
     return psnr,ssim,exe_time
 

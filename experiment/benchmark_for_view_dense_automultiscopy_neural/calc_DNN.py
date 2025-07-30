@@ -19,9 +19,9 @@ def sort_key(s):
 def perspective_(img, src_pts, dst_pts):
     """
     img:      ndarray, HxWxC or HxW
-    src_pts:  (4, 2) float32, 四边形的四个点 (源)
-    dst_pts:  (4, 2) float32, 四边形变换后的四个点 (目标)
-    返回:      透视变换后的图像 (与 img 相同 shape)
+    src_pts:  (4, 2) float32, four points of the quadrilateral (source)
+    dst_pts:  (4, 2) float32, four points after transformation (destination)
+    Returns:  Perspective transformed image (same shape as img)
     """
     src_pts = np.array(src_pts, dtype=np.float32)
     dst_pts = np.array(dst_pts, dtype=np.float32)
@@ -31,9 +31,9 @@ def perspective_(img, src_pts, dst_pts):
     return warped
 def perspective(img, src_pts, dst_pts):
 	if img.ndim == 3 and img.shape[0] <= 4:  # (C, H, W)
-		img = np.transpose(img, (1,2,0))     # 转成 (H,W,C) 再变换
+		img = np.transpose(img, (1,2,0))     # Convert to (H,W,C) for transformation
 		warped = perspective_(img, src_pts, dst_pts)
-		warped = np.transpose(warped, (2,0,1))  # 转回 (C,H,W)
+		warped = np.transpose(warped, (2,0,1))  # Convert back to (C,H,W)
 	else:
 		warped = perspective_(img, src_pts, dst_pts)
 	return warped
@@ -47,17 +47,17 @@ def get_masks(imgs, view, coord_screen_world, coord_pixel_init):
 	view: (N_in, 4, 4)
 	coord_screen_world: (N_s, 4, 3)
 	coord_pixel_init:   (N_s, 4, 2)
-	返回
+	Returns
 	masks: (N_in, H, W, C_rgb)   
 	"""
 
 	B = 1
 	N_in, _, _, _ = imgs.shape
 
-	# Repeat/broadcast imgs & view for N_s screens, flatten为第0维
+	# Repeat/broadcast imgs & view for N_s screens, flatten to first dimension
 	imgs_rep = np.repeat(imgs[:, None], N_s, axis=1).reshape(N_in * N_s, H, W, C_rgb)      # (N_in*N_s, H, W, C_rgb)
 	view_rep = np.repeat(view[:, None], N_s, axis=1).reshape(N_in * N_s, 4, 4)             # (N_in*N_s, 4, 4)
-	# coord_screen_world, coord_pixel_init 对 N_in 重复
+	# Repeat coord_screen_world, coord_pixel_init for N_in
 	coord_screen_world_rep = np.tile(coord_screen_world[None, :, :, :], (N_in, 1, 1, 1)).reshape(N_in * N_s, 4, 3)
 	coord_pixel_init_rep   = np.tile(coord_pixel_init[None, :, :, :],   (N_in, 1, 1, 1)).reshape(N_in * N_s, 4, 2)
 
@@ -68,10 +68,10 @@ def get_masks(imgs, view, coord_screen_world, coord_pixel_init):
 		coord_pixel_init_rep    # (N_in*N_s, 4, 2)
 	)
      
-	# 为方便，假设 masks_new 还是 (N_in*N_s, H, W, C_rgb)
-    # reshape 回合成 (N_in, N_s, H, W, C_rgb)
+	# For convenience, assume masks_new is still (N_in*N_s, H, W, C_rgb)
+    # Reshape back to (N_in, N_s, H, W, C_rgb)
 	masks_new = masks_new.reshape(N_in, N_s, H, W, C_rgb)
-	# 在 N_s 维度上做乘积（prod），得到 (N_in, H, W, C_rgb)
+	# Perform product along N_s dimension, resulting in (N_in, H, W, C_rgb)
 	masks = np.prod(masks_new, axis=1)    # (N_in, H, W, C_rgb)
 
 	return masks
@@ -81,18 +81,18 @@ def view_transform_np(imgs, view, coord_src, coord_src_img, FOV=40/180*math.pi):
 	fx = W/2 / math.tan(FOV/2)
 	N = imgs.shape[0]
 
-	# 增广坐标为齐次形式
+	# Augment coordinates to homogeneous form
 	ones = np.ones((N, 4, 1), dtype=coord_src.dtype)
 	coord_src_homo = np.concatenate([coord_src, ones], axis=-1)  # (N, 4, 4)
 
-	# 计算逆view矩阵
+	# Calculate inverse view matrix
 	view_inv = np.linalg.inv(view)  # (N, 4, 4)
 
-	# 变换到目标坐标系
+	# Transform to target coordinate system
 	coord_dst_homo = np.matmul(view_inv[:, None, :, :], coord_src_homo[..., None])  # (N, 4, 4, 1)
 	coord_dst = np.squeeze(coord_dst_homo, -1)[..., :3]    # (N, 4, 3)
 
-	# 将3D坐标投影到2D像素
+	# Project 3D coordinates to 2D pixels
 	u = (-fx * coord_dst[..., [0]] / coord_dst[..., [2]] + W/2)  # (N, 4, 1)
 	v = (fx * coord_dst[..., [1]] / coord_dst[..., [2]] + H/2)   # (N, 4, 1)
 	coord_dst_img = np.concatenate([u, v], axis=-1)   # (N, 4, 2)
@@ -133,12 +133,12 @@ def eye2world_numpy(vertical, eye_world: np.ndarray, delta=np.array([0., 0., 0.]
     return rt
 def get_PSNR(MSE, mask=None, MAX=1):
     """
-    MSE: 标量，或 ndarray（可带 mask）
-    mask: 可选，0-1 ndarray，若给出则仅对 mask “为 1”的区域做 psnr 评估
-    MAX: 峰值，一般归一化情况下为 1，uint8 图片时为 255
+    MSE: scalar or ndarray (can have mask)
+mask: optional, 0-1 ndarray, if provided, only evaluates psnr in regions where mask is "1"
+MAX: peak value, generally 1 for normalized data, 255 for uint8 images
     """
     if mask is not None:
-        # 等价于 PyTorch 的 mask.nelement() / mask.sum()
+        # Equivalent to PyTorch's mask.nelement() / mask.sum()
         MSE = MSE * mask.size / mask.sum()
     return 10 * np.log10(MAX ** 2 / MSE)
 def get_screen_coords_world_numpy(thickness, scale_physical2world, physical_width, ground, ground_coefficient, orientation, delta):
@@ -165,7 +165,7 @@ def get_screen_coords_world_numpy(thickness, scale_physical2world, physical_widt
     zs = np.linspace(z_min, z_max, N_s)
     coords = []
     if orientation == "xoy":
-        # 注意顺序与torch实现一致
+        # Note: order consistent with torch implementation
         for z in zs:
             coords.append([
                 [-W_w/2, H_w/2, z],
@@ -210,7 +210,7 @@ def get_screen_coords_world_numpy(thickness, scale_physical2world, physical_widt
 
     coord_screen_world = np.array(coords, dtype=np.float32) # (N_screen, 4, 3)
 
-    # 加偏移
+    # Add offset
     delta = np.array(delta)
     for index in range(3):
         coord_screen_world[..., index] += delta[index]
@@ -230,7 +230,7 @@ def init_scene_args_numpy(args):
     if args.scene in scene_dict:
         arg_dict = scene_dict[args.scene]
     else:
-        arg_dict = scene_dict_uco3d.copy()  # 避免修改原始全局dict
+        arg_dict = scene_dict_uco3d.copy()  # Avoid modifying original global dict
         arg_dict["scale_physical2world"] = 0.28
 
     args.scale_physical2world = arg_dict["scale_physical2world"]
@@ -251,7 +251,7 @@ def init_scene_args_numpy(args):
         args.delta_z = arg_dict["delta_z"]
 
     print(arg_dict)
-    # 用 numpy array 生成 delta
+    # Generate delta using numpy array
     delta = np.zeros(3, dtype=np.float32)
     delta[0] = arg_dict.get('delta_x', 0)
     delta[1] = arg_dict.get('delta_y', 0)
@@ -277,7 +277,7 @@ pad_size = (int)(view_point_row_num/2)
 save_path = "./outputs/experiment/DNN/calc_DNN_mask"
 os.makedirs(save_path, exist_ok=True)
 
-# 在代码开头添加目标尺寸定义
+# Add target size definition at the beginning of the code
 N_s = 3
 W = 640
 H = 480
@@ -398,10 +398,10 @@ for i in range(0, 7):
 		mse_per_image = cp.mean(diff**2, axis=(1, 2, 3))
 		psnr_per_image = get_PSNR(mse_per_image, masks_)
 
-		# SSIM计算 (批量处理)
+		# SSIM calculation (batch processing)
 		ssim_per_image = ssim_calc(gpu_reproduced*255*masks_, gpu_gt*255*masks_)
 
-		# 5. 计算平均指标
+		# 5. Calculate average metrics
 		avg_psnr = cp.mean(psnr_per_image).get()
 		avg_ssim = cp.mean(ssim_per_image).get()
 		psnr_ls.append(avg_psnr)
@@ -415,12 +415,12 @@ for i in range(0, 7):
 	output_path = os.path.join(save_path, exp_name)
 	os.makedirs(output_path, exist_ok=True)
 
-	# 保存为 NumPy .npy 格式
+	# Save as NumPy .npy format
 	np.save(os.path.join(output_path, "{}_psnr.npy".format(exp_name)), psnr_arr)
 	np.save(os.path.join(output_path, "{}_ssim.npy".format(exp_name)), ssim_arr)
 	np.save(os.path.join(output_path, "{}_time.npy".format(exp_name)), time_arr)
 
-	# 写入统计结果的文本文件
+	# Write text file with statistical results
 	with open(os.path.join(output_path, 'output.txt'), 'a') as f:
 		f.write("{}_all_psnr: {:.6f}\n".format(exp_name, np.sum(psnr_arr)))
 		f.write("{}_all_ssim: {:.6f}\n".format(exp_name, np.sum(ssim_arr)))

@@ -31,7 +31,7 @@ def eye2world_pytroch(vertical, eye_world: torch.Tensor, delta=torch.tensor([0.,
     
     return rt
 def sort_key(s):
-    # 左右是否会对模型的训练有影响
+    # left/right eye order affects model training, need to be fixed
     # "pair0_x5.896_y45.396_z-24.465_left.jpg"
     # pair1717_x2.712_y0.103_z0.381_0.jpg
     pairs = s.split('_')
@@ -232,6 +232,7 @@ class SceneDataset(Dataset):
         self.scene_list = os.listdir(self.scenes_path)
         
         if 'uco3d' in scenes_path:
+            # if use our processed uco3d dataset, you can use the following suffix
             if 'val' in scenes_path:
                 self.suffix = '1_scale_0.07_R_125_280_FOV_40_theta_40_140_phi_10_70'
             else:
@@ -421,7 +422,7 @@ class SceneDataset(Dataset):
 
 
 class CombinedDataset(Dataset):
-    """组合两个数据集的Dataset类，配合DualDatasetSampler使用"""
+    """Combined dataset class that works with DualDatasetSampler"""
     
     def __init__(self, dataset1: Dataset, dataset2: Dataset):
         self.dataset1 = dataset1
@@ -436,15 +437,15 @@ class CombinedDataset(Dataset):
     
     def __getitem__(self, index):
         if index < self.len1:
-            # 来自dataset1的样本
+            # Sample from dataset1
             return self.dataset1[index]
         else:
-            # 来自dataset2的样本，需要对索引取模以处理重复采样
+            # Sample from dataset2, using modulo for index to handle repeated sampling
             idx2 = (index - self.len1) % self.len2
 
             return self.dataset2[idx2]
     
     @staticmethod
     def collate_fn(batch):
-        # 使用dataset1的collate_fn（假设两个数据集的collate_fn相同）
+        # Use dataset1's collate_fn (assuming both datasets have the same collate_fn)
         return SceneDataset.collate_fn(batch)

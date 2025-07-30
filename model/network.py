@@ -147,7 +147,7 @@ class EyeRealNet(nn.Module):
         B, N_in, C_rgb, H, W = imgs.shape
         N_s = self.N_screen
         # B N_in 3 H W -> B*N_s*N_in 3 H W
-        # import pdb;pdb.set_trace()
+        
         x, _ = self.view_tranform(
             imgs.view(B, 1, N_in, C_rgb, H, W).repeat(1, N_s, 1, 1, 1, 1).flatten(0, 2),
             views.view(B, 1, N_in, 4, 4).repeat(1, N_s, 1, 1, 1).flatten(0, 2), FOV,
@@ -173,7 +173,7 @@ class EyeRealNet(nn.Module):
     def view_tranform(imgs, view, FOV, coord_src, coord_src_img, reverse=False):
         N, _, H, W = imgs.shape
         fx = W/2 / math.tan(FOV/2)
-        # import pdb;pdb.set_trace()
+        
         coord_src_homo = torch.cat([coord_src.cpu(), torch.ones(N,4,1)], dim=-1).to(imgs.device)
         coord_dst = torch.matmul(torch.inverse(view)[:, None], coord_src_homo[..., None]).squeeze(-1)[..., :3] # N 4 3
         u = (-fx*coord_dst[..., [0]]/coord_dst[..., [2]] + W/2)
@@ -241,7 +241,7 @@ class EyeRealNet(nn.Module):
         psnr = get_PSNR(psnr_term, masks)
         if math.isnan(psnr) or math.isinf(psnr):
             psnr=0
-            # import pdb;pdb.set_trace()
+            
 
         outs = dict(loss_mse=loss, PSNR=psnr)
         if self.l1_mutex or self.use_mutex:

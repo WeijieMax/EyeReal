@@ -107,7 +107,7 @@ def left_coords_dict(step=2, boundary=6, eye=None, args=None):
     for r in range(0, boundary+step, step):
         views_d[r] = []
         for coords in c_d[r]:
-            # import pdb;pdb.set_trace()
+            
             views_d[r].append(eye2world_pytroch(vertical=vertical, eye_world=coords, delta=delta))
         
     return c_d, views_d
@@ -305,7 +305,7 @@ def get_model_pred(left_view, right_view):
     # views = torch.stack([right_view,left_view], dim=0)[None]
     images, views = images.cuda(non_blocking=True), views.cuda(non_blocking=True)
     coord_screen_world_ = coord_screen_world[None].cuda()
-    # import pdb;pdb.set_trace()
+    
     patterns = model(images, views, coord_screen_world_)
     outs = model.get_loss(patterns, gt=images, views=views, coord_screen_world=coord_screen_world, return_preds=True) 
     
@@ -416,9 +416,9 @@ def get_ori_coord(s):
     return (x,y,z)
 
 
-# 定义阈值和边界
-LOW_THRESH = 20         # 低阈值
-HIGH_THRESH = 34        # 高阈值
+# Define thresholds and boundaries
+LOW_THRESH = 20         # Low threshold
+HIGH_THRESH = 34        # High threshold
 mid = 6
 edge_b = 6
 edge_a = 5
@@ -442,7 +442,7 @@ args.model_choice = 0
 init_scene_args(args=args)
 
 args.ckpt_weights = r"./weight/model_ckpts/pretrained_model.pth"
-    gaussians_path = './weight/gaussian_ply/lego_bulldozer.ply'
+gaussians_path = './weight/gaussian_ply/lego_bulldozer.ply'
 model = load_model(args)
 render = get_gaussian_render(args.FOV, gaussians_path)
 transform = get_transform(args=args)

@@ -20,14 +20,14 @@ warnings.filterwarnings('ignore')
 
 
 
-# 获取深度图, 默认尺寸 424x512
+# Get depth image, default size 424x512
 def get_last_depth(kinect: PyKinectRuntime.PyKinectRuntime):
     frame = kinect.get_last_depth_frame()
     frame = frame.astype(np.uint8)
     dep_frame = np.reshape(frame, [kinect.depth_frame_desc.Height, kinect.depth_frame_desc.Width])
     return cv2.cvtColor(dep_frame, cv2.COLOR_GRAY2RGB)
 
-#获取rgb图, 1080x1920x4
+# Get RGB image, 1080x1920x4
 def get_last_rbg(kinect: PyKinectRuntime.PyKinectRuntime):
     frame = kinect.get_last_color_frame()
     return np.reshape(frame, [kinect.color_frame_desc.Height, kinect.color_frame_desc.Width, 4])[:, :, 0:3]

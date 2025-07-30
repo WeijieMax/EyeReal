@@ -32,19 +32,19 @@ def eye2world_pytroch(eye_world: torch.Tensor):
 
 
 def parse_coordinates(filename):
-    """从文件名中解析出视点坐标(x, y, z)并转换为PyTorch张量"""
+    """Parse viewpoint coordinates (x, y, z) from filename and convert to PyTorch tensor"""
     base = os.path.basename(filename)
     matches = re.findall(r'_x([\d.-]+)_y([\d.-]+)_z([\d.-]+)_', base)
     if matches and len(matches[0]) == 3:
-        # 将坐标转换为torch.Tensor
+        # Convert coordinates to torch.Tensor
         return torch.tensor([float(matches[0][0]), 
                             float(matches[0][1]), 
                             float(matches[0][2])], dtype=torch.float32)
     else:
-        raise ValueError(f"无法从文件名解析坐标: {filename}")
+        raise ValueError(f"Cannot parse coordinates from filename: {filename}")
 
 def generate_filename(base_dir, prefix, point, index):
-    """生成符合格式要求的文件名"""
+    """Generate filename with the required format"""
     x, y, z = point.tolist()
     return os.path.join(
         base_dir, 
@@ -65,26 +65,26 @@ def create_data_from_folder(data_path, save_path):
     for i in tqdm(range(N)):
         
 
-        # 原始文件路径
+        # Original file paths
         file1 = os.path.join(data_path, image_names[i*2])
         file2 = os.path.join(data_path, image_names[i*2+1])
 
-        # 1. 提取两个视点坐标 (转换为PyTorch张量)
+        # 1. Extract two viewpoint coordinates (convert to PyTorch tensor)
         eye1 = parse_coordinates(file1)
         eye2 = parse_coordinates(file2)
-        # print("原始视点坐标:")
+        # print("Original viewpoint coordinates:")
         # print(f"eye1: {eye1}")
         # print(f"eye2: {eye2}")
 
-        # 获取基础路径和前缀用于生成新文件名
+        # Get base path and prefix for generating new filenames
 
-        prefix = image_names[i*2].split('_')[0] # 文件名前缀
+        prefix = image_names[i*2].split('_')[0] # File name prefix
 
-        # 2. 计算线段eye1-eye2的四等分点
+        # 2. Calculate the quarter points of line segment eye1-eye2
         AB = eye2 - eye1
-        d = torch.norm(AB) / 2  # 四分之一距离
+        d = torch.norm(AB) / 2  # Quarter distance
 
-        # 计算线段上的5个点 (使用PyTorch张量运算)
+        # Calculate 5 points on the line segment (using PyTorch tensor operations)
         points_on_line = [
             eye1 - AB * 0.5,
             eye1,
@@ -93,14 +93,14 @@ def create_data_from_folder(data_path, save_path):
             eye2 + AB * 0.5,
         ]
 
-        # 3. 计算垂直方向
-        A = AB  # 向量A (eye1->eye2)
-        B = points_on_line[2]  # 向量B (指向中点q2)
-        C = torch.cross(A, B)  # 向量C = A × B (使用PyTorch叉积)
+        # 3. Calculate perpendicular direction
+        A = AB  # Vector A (eye1->eye2)
+        B = points_on_line[2]  # Vector B (pointing to midpoint q2)
+        C = torch.cross(A, B)  # Vector C = A × B (using PyTorch cross product)
 
-        # 归一化处理
+        # Normalization
         norm_C = torch.norm(C)
-        if norm_C < 1e-10:  # 处理叉积为零的情况
+        if norm_C < 1e-10:  # Handle case when cross product is zero
             alt_vector = torch.tensor([1.0, 0.0, 0.0] if abs(A[0]) < 0.9 else [0.0, 1.0, 0.0])
             C = torch.cross(A, alt_vector)
             norm_C = torch.norm(C)
@@ -109,7 +109,7 @@ def create_data_from_folder(data_path, save_path):
 
         unit_C = C / norm_C
 
-        # 4. 生成25个点并创建文件名
+        # 4. Generate 25 points and create filenames
         # k_values = [-2, -1, 0, 1, 2]
         k_values = [2, 1, 0, -1, -2]
         generated_files = []
@@ -123,7 +123,7 @@ def create_data_from_folder(data_path, save_path):
                 offset_point = point + k * d * unit_C
                 p_view = eye2world_pytroch(offset_point).cuda()
                 p_img = render.render_from_view(p_view)
-                # 生成符合格式的文件名
+                # Generate filename with the required format
                 file_index = i * len(k_values) + j
                 new_file = generate_filename(save_path, prefix, offset_point, file_index)
                 
@@ -131,10 +131,10 @@ def create_data_from_folder(data_path, save_path):
                 
                 # generated_files.append(new_file)
 
-        # 输出结果
-        # print("\n生成的25个文件名:")
+        # Output results
+        # print("\nGenerated 25 filenames:")
         # for idx, fname in enumerate(generated_files):
-        #     print(f"点{idx+1}: {fname}")
+        #     print(f"Point {idx+1}: {fname}")
 
 
 

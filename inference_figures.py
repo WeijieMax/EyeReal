@@ -32,7 +32,7 @@ def get_screen_coords_world(thickness, scale_physical2world, physical_width, gro
             z_min = ground
         # print(f"z_min: {z_min}, type: {type(z_min)}")
         # print(f"Z_world: {Z_world}, type: {type(Z_world)}")
-        # import pdb;pdb.set_trace()
+        
         z_max = (z_min + Z_world)
         W_w = W * scale_pixel2world
         H_w = H * scale_pixel2world
@@ -95,7 +95,7 @@ def init_scene_args(args):
     delta[0] = arg_dict.get('delta_x') if arg_dict.get('delta_x') else 0
     delta[1] = arg_dict.get('delta_y') if arg_dict.get('delta_x') else 0
     delta[2] = arg_dict.get('delta_z') if arg_dict.get('delta_x') else 0
-    # import pdb;pdb.set_trace()
+    
     coord_screen_world = get_screen_coords_world(
         thickness = arg_dict.get('thickness'), 
         scale_physical2world = arg_dict.get('scale_physical2world'), 

@@ -31,7 +31,7 @@ def get_img_matrix(s):
     eye_world = torch.tensor([ori_x, ori_y, ori_z])
     return eye2world_pytroch(eye_world=eye_world)
 class NTFDataset(Dataset):
-    """自定义数据集"""
+    """Custom dataset"""
 
     def __init__(self, images_path: list, transform=None, data_prefix=None, extra_gt_path=None):
         self.data_prefix = data_prefix
@@ -64,7 +64,7 @@ class NTFDataset(Dataset):
             
             mask_views.append(get_img_matrix(self.images_path[idx]))
 
-            # RGB为彩色图片，L为灰度图片
+            # RGB for color images, L for grayscale images
             if img.mode != 'RGB':
                 raise ValueError("image: {} isn't RGB mode.".format(self.images_path[idx]))
             if self.extra_gt is not None:

@@ -35,7 +35,7 @@ def randomize(R, phi, theta):
     d = R*math.sin(phi)
     delta = math.atan(0.5*eye_distance/d)
     r = math.sqrt(d**2 + (0.5*eye_distance)**2)
-    x1 = round(r*math.sin(theta-delta), 3) # xz交换
+    x1 = round(r*math.sin(theta-delta), 3) # x-z exchange
     y1 = round(r*math.cos(theta-delta), 3)
     x2 = round(r*math.sin(theta+delta), 3)
     y2 = round(r*math.cos(theta+delta), 3)

@@ -114,7 +114,7 @@ def train_one_epoch(args, model: EyeRealNet, optimizer, data_loader, lr_schedule
 
         optimizer.zero_grad()  # set_to_none=True is only available in pytorch 1.6+
 
-        # import pdb;pdb.set_trace()
+        
         patterns = model(images, views, coord_screen_world)
         outs = model.module.get_loss(patterns, gt=images, views=views, coord_screen_world=coord_screen_world, return_preds=save_preds) 
         loss = loss_mse = outs['loss_mse']

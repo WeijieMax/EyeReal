@@ -80,7 +80,7 @@ class DisplayNetNTF():
             add_result = (torch.roll(self.front, shifts=view_shifts, dims=(-2, -1)) * self.mask_generation(view_shifts)) + \
                             self.middle + \
                         (torch.roll(self.rear, shifts=anti_view_shifts, dims=(-2, -1)) * self.mask_generation(anti_view_shifts))
-            #padsize+phi，3*padsize-phi都有些古怪，和我们的计数规则不一样
+            #padsize+phi, 3*padsize-phi are following the work of Kuruyama et al. 2020
             if refine_layer == 'rear':
                 numerator += torch.roll(images[i], shifts=view_shifts, dims=(-2, -1)) * self.mask_generation(view_shifts) 
                 denominator += torch.roll(add_result, shifts=view_shifts, dims=(-2, -1))  * self.mask_generation(view_shifts)
