@@ -101,7 +101,7 @@ def sort_key(s):
 #             z_min = ground
 #         # print(f"z_min: {z_min}, type: {type(z_min)}")
 #         # print(f"Z_world: {Z_world}, type: {type(Z_world)}")
-#         # import pdb;pdb.set_trace()
+# 
 #         z_max = (z_min + Z_world)
 #         W_w = W * scale_pixel2world
 #         H_w = H * scale_pixel2world
@@ -138,7 +138,7 @@ def sort_key(s):
 #         # print("scene_id: ", scene_id)
 #         # print("scene_id2key ", scene_id2key)
 #         # print("scene_id2key[scene_id]", scene_id2key[scene_id])
-#         # import pdb;pdb.set_trace()
+# 
 #         # scene_id_ = 4
         
 #         # print("ind_", ind_)
@@ -151,7 +151,7 @@ def sort_key(s):
 #         delta[0] = arg_dict.get('delta_x') if arg_dict.get('delta_x') else 0
 #         delta[1] = arg_dict.get('delta_y') if arg_dict.get('delta_x') else 0
 #         delta[2] = arg_dict.get('delta_z') if arg_dict.get('delta_x') else 0
-#         # import pdb;pdb.set_trace()
+# 
 #         coord_screen_world = self.get_screen_coords_world(
 #             thickness = arg_dict.get('thickness'), 
 #             scale_physical2world = arg_dict.get('scale_physical2world'), 
@@ -164,11 +164,11 @@ def sort_key(s):
         
 #         img_path = os.path.join(self.scenes_path, scene_name)
 #         img_names = os.listdir(img_path)
-#         # import pdb;pdb.set_trace()
+# 
 #         img_names = sorted(img_names, key=lambda x: sort_key(x, scene_name))
 #         # print("img_names: ", len(img_names))
 #         ind = ind_ - (0 if scene_id == 0 else self.scene_counts[scene_id-1]+1)
-#         # print("ind", ind)
+# 
         
 #         left_id = ind * 2
 #         right_id = ind * 2 + 1
@@ -230,12 +230,14 @@ class SceneDataset(Dataset):
         
         self.scenes_path = scenes_path
         self.scene_list = os.listdir(self.scenes_path)
-        if 'val' in scenes_path:
-            self.suffix = '1_scale_0.07_R_125_280_FOV_40_theta_40_140_phi_10_70'      # TODO: Change Here!
-        elif 'EyeReal_paper' in scenes_path:
-            self.suffix = ''
+        
+        if 'uco3d' in scenes_path:
+            if 'val' in scenes_path:
+                self.suffix = '1_scale_0.07_R_125_280_FOV_40_theta_40_140_phi_10_70'
+            else:
+                self.suffix = '500_scale_0.07_R_125_280_FOV_40_theta_40_140_phi_10_70'
         else:
-            self.suffix = '500_scale_0.07_R_125_280_FOV_40_theta_40_140_phi_10_70'      # TODO: Change Here!
+            self.suffix = ''
         
         self.transform = transform
         self.train_NTF = train_NTF
@@ -282,14 +284,10 @@ class SceneDataset(Dataset):
             z_min = Z_world * ground_coefficient
         else:
             z_min = ground
-        # print(f"z_min: {z_min}, type: {type(z_min)}")
-        # print(f"Z_world: {Z_world}, type: {type(Z_world)}")
-        # import pdb;pdb.set_trace()
+
         z_max = (z_min + Z_world)
-        ###
         z_min = z_min - Z_world / 2
         z_max = z_max + Z_world / 2
-        ###
         W_w = W * scale_pixel2world
         H_w = H * scale_pixel2world
         
@@ -329,13 +327,13 @@ class SceneDataset(Dataset):
 
         if self.suffix == '':
             scene_name_with_suffix = ''
-            # print(scene_name)
+
             arg_dict = scene_dict[scene_name]
             delta = torch.tensor([0, 0, 0])
             delta[0] = arg_dict.get('delta_x') if arg_dict.get('delta_x') else 0
             delta[1] = arg_dict.get('delta_y') if arg_dict.get('delta_x') else 0
             delta[2] = arg_dict.get('delta_z') if arg_dict.get('delta_x') else 0
-            # import pdb;pdb.set_trace()
+    
             coord_screen_world = self.get_screen_coords_world(
                 thickness = arg_dict.get('thickness'), 
                 scale_physical2world = arg_dict.get('scale_physical2world'), 
@@ -351,7 +349,7 @@ class SceneDataset(Dataset):
             delta[0] = arg_dict.get('delta_x') if arg_dict.get('delta_x') else 0
             delta[1] = arg_dict.get('delta_y') if arg_dict.get('delta_x') else 0
             delta[2] = arg_dict.get('delta_z') if arg_dict.get('delta_x') else 0
-            # import pdb;pdb.set_trace()
+    
             coord_screen_world = self.get_screen_coords_world(
                 thickness = arg_dict.get('thickness'), 
                 scale_physical2world = arg_dict.get('scale_physical2world'), 
@@ -363,12 +361,12 @@ class SceneDataset(Dataset):
             )
             
         img_path = os.path.join(self.scenes_path, scene_name, scene_name_with_suffix)
-        # print(img_path)
+
         img_names = os.listdir(img_path)
         img_names = sorted(img_names, key=lambda x: sort_key(x))
         img_num = len(img_names) // 2
         ind = random.randint(0, img_num-1)
-        # print("ind", ind)
+
         
         left_id = ind * 2
         right_id = ind * 2 + 1
@@ -431,7 +429,7 @@ class CombinedDataset(Dataset):
         self.len1 = len(dataset1)
         self.len2 = len(dataset2)
 
-        # print(self.len1, self.len2)
+
         
     def __len__(self):
         return self.len1 + self.len2
@@ -443,7 +441,7 @@ class CombinedDataset(Dataset):
         else:
             # 来自dataset2的样本，需要对索引取模以处理重复采样
             idx2 = (index - self.len1) % self.len2
-            # print('123123123')
+
             return self.dataset2[idx2]
     
     @staticmethod
