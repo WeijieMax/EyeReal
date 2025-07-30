@@ -142,7 +142,7 @@ def create_data_from_folder(data_path, save_path):
 render = GaussianRender(
         parser=get_gaussian_parser(),
         sh_degree=3, 
-        gaussians_path='weight\gaussian_ply\lego_bulldozer.ply',
+        gaussians_path='./weight/gaussian_ply/lego_bulldozer.ply',
         white_background=True, FOV=40 / 180 * math.pi)
 
 for i in range(0, 7):

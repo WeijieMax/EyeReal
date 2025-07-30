@@ -15,7 +15,7 @@ from plyfile import PlyData, PlyElement
 
 from data.render import GaussianRender
 from dataset import eye2world_pytroch
-from train_eyeReal import init_scene_args
+from train_EyeReal import init_scene_args
 from config.args import get_gaussian_parser
 from config.args import get_parser
 
@@ -329,7 +329,7 @@ def main():
             
             
             if DEBUG:
-                debug_path = 'dataset/scene_data/debug/'
+                debug_path = './dataset/scene_data/debug/'
                 os.makedirs(debug_path, exist_ok=True)
                 all_image_pairs = []
             

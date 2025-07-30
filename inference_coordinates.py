@@ -181,7 +181,7 @@ def get_imgs(gaussian_path, FOV, view_l, view_r):
     return (eye1_img, eye2_img)
     
 
-def load_inference(mid_coord, eyeRealNet_weights, save_path, gaussian_path, args, coord_screen_world):
+def load_inference(mid_coord, EyeRealNet_weights, save_path, gaussian_path, args, coord_screen_world):
     
     
     mid_coord = [mid_coord[0]*args.scale_physical2world, mid_coord[1]*args.scale_physical2world,mid_coord[2]*args.scale_physical2world]
@@ -193,7 +193,7 @@ def load_inference(mid_coord, eyeRealNet_weights, save_path, gaussian_path, args
     if FOV > math.pi: 
         FOV = FOV / 180 * math.pi
     model = EyeRealNet(args=args, FOV=FOV)
-    model.load_state_dict(torch.load(eyeRealNet_weights, map_location='cpu')['model'])
+    model.load_state_dict(torch.load(EyeRealNet_weights, map_location='cpu')['model'])
     model = model.cuda()
     model.eval()
     transform = get_transform(args=args)
@@ -232,9 +232,9 @@ if __name__ == "__main__":
     coord_screen_world = init_scene_args(args=args)
     
     save_path = r"./outputs/inference/demo/coords/{}/".format(args.scene)
-    eyeRealNet_weights = r"/path/to/pretrained_model.pth"
-    gaussian_path = r'weight/gaussian_ply/lego_bulldozer.ply'
+    EyeRealNet_weights = r"/path/to/pretrained_model.pth"
+    gaussian_path = r'./weight/gaussian_ply/lego_bulldozer.ply'
     mid_coord = [100, 0, 0] 
     os.makedirs(save_path, exist_ok=True)
-    load_inference(mid_coord=mid_coord, eyeRealNet_weights=eyeRealNet_weights, 
+    load_inference(mid_coord=mid_coord, EyeRealNet_weights=EyeRealNet_weights, 
                    gaussian_path=gaussian_path, save_path=save_path, args=args, coord_screen_world=coord_screen_world)

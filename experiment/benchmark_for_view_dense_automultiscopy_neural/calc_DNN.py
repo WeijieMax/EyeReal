@@ -274,7 +274,7 @@ view_point_row_num = 5
 view_point_num = view_point_row_num*view_point_row_num
 pad_size = (int)(view_point_row_num/2)
 
-save_path = "outputs\experiment\DNN\calc_DNN_mask"
+save_path = "./outputs/experiment/DNN/calc_DNN_mask"
 os.makedirs(save_path, exist_ok=True)
 
 # 在代码开头添加目标尺寸定义

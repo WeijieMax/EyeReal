@@ -346,7 +346,7 @@ target_size = (W, H)
 render = GaussianRender(
     parser=get_gaussian_parser(),
     sh_degree=3, 
-    gaussians_path=r"weight\gaussian_ply\lego_bulldozer.ply",
+            gaussians_path=r"./weight/gaussian_ply/lego_bulldozer.ply",
     white_background=True, FOV=40 / 180 * math.pi, render_image_size=(H,W))
 
 

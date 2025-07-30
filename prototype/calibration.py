@@ -10,7 +10,7 @@ import warnings
 from copy import deepcopy as c
 import random
 from config.args import get_parser
-from train_eyeReal import init_scene_args
+from train_EyeReal import init_scene_args
 from model.network import EyeRealNet
 from data.dataset import eye2world_pytroch
 warnings.filterwarnings('ignore')
@@ -78,7 +78,7 @@ init_scene_args(args=args)
 
 
 model = EyeRealNet(args=args, FOV=40/180*math.pi)
-model.load_state_dict(torch.load(r'weight\model_ckpts\lego_bulldozer.pth', map_location='cpu')['model'])
+model.load_state_dict(torch.load(r'./weight/model_ckpts/lego_bulldozer.pth', map_location='cpu')['model'])
 model = model.cuda()
 model.eval()
 
@@ -86,7 +86,7 @@ phi_ls = [70, 80, 90]
 theta_ls = [80, 90, 100]
 R_ls = [55, 65, 75]
 
-data_path = f"outputs\calibration/{args.scene}/"
+data_path = f"./outputs/calibration/{args.scene}/"
 os.makedirs(data_path, exist_ok=True)
 # scale = 24 * math.tan(math.radians(30)) * 2 / 120.96
 for R in R_ls:

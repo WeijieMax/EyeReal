@@ -14,7 +14,7 @@ import warnings
 import argparse
 from copy import deepcopy as c
 from data.dataset import eye2world_pytroch
-from train_eyeReal import init_scene_args
+from train_EyeReal import init_scene_args
 from config.args import get_parser, get_gaussian_parser
 warnings.filterwarnings('ignore')
 
@@ -115,7 +115,7 @@ def main():
     kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Depth | PyKinectV2.FrameSourceTypes_Color)
 
     detector = cv2.FaceDetectorYN.create(
-        'weights/face_detection_yunet_2023mar.onnx',
+        './weights/face_detection_yunet_2023mar.onnx',
         "",
         (320, 320),
         0.7,
@@ -131,7 +131,7 @@ def main():
     render = GaussianRender(
         parser=get_gaussian_parser(),
         sh_degree=3, 
-        gaussians_path='weight\gaussian_ply\lego_bulldozer.ply',
+        gaussians_path='./weight/gaussian_ply/lego_bulldozer.ply',
         white_background=True, FOV=FOV)
  
     # calibated matrix
@@ -148,7 +148,7 @@ def main():
     init_scene_args(args=args)
 
     model = EyeRealNet(args=args, FOV=FOV)
-    model.load_state_dict(torch.load(r"weight\model_ckpts\lego_bulldozer.pth", map_location='cpu')['model'])
+    model.load_state_dict(torch.load(r"./weight/model_ckpts/lego_bulldozer.pth", map_location='cpu')['model'])
     model = model.cuda()
     model.eval()
 

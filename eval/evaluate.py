@@ -1,6 +1,6 @@
 import sys
 from lib.NTF.train_NTF import *
-from train_eyeReal import *
+from train_EyeReal import *
 from data.dataset import *
 from config.args import get_parser
 from config.scene_dict import scene_dict
@@ -167,7 +167,7 @@ import math
 psnr_ls = list()
 ssim_ls = list()
 
-def calc_eyeReal(args, model, transform, FOV, data_path, coord_screen_world):
+def calc_EyeReal(args, model, transform, FOV, data_path, coord_screen_world):
     data_prefix = os.path.join(os.getcwd(), data_path)
     images_path = os.listdir(data_path)
     images_path = sorted(images_path, key=sort_key)
@@ -212,7 +212,7 @@ def extract_dataset_name(dataset_path):
     dataset_name = os.path.basename(parent_dir)
     return dataset_name
 
-def eval_eyeReal_on_val_dataset(args):
+def eval_EyeReal_on_val_dataset(args):
     FOV = 40 / 180 * math.pi
     args.train_NTF = False
     if not args.ckpt_weights:
@@ -265,7 +265,7 @@ def eval_eyeReal_on_val_dataset(args):
         model.eval()
         
         # try:
-        psnr, ssim = calc_eyeReal(args=args, model=model, transform=transform, FOV=FOV, 
+        psnr, ssim = calc_EyeReal(args=args, model=model, transform=transform, FOV=FOV, 
                                  data_path=dataset_path, coord_screen_world=coord_screen_world)
 
         del model, coord_screen_world
@@ -325,7 +325,7 @@ if __name__ == '__main__':
     
 
     print("Starting evaluation on validation datasets...")
-    results = eval_eyeReal_on_val_dataset(args)
+    results = eval_EyeReal_on_val_dataset(args)
     
     if results:
         print(f"\nFinal Results Summary:")

@@ -1,7 +1,7 @@
 export PYTHONPATH=/path/to/EyeReal
 
 OMP_NUM_THREADS=8 python -m torch.distributed.launch --nproc_per_node 8 --master_port 12355 \
-   train_eyeReal.py --exp_name dim32_15scene_2scale_layer6 \
+   train_EyeReal.py --exp_name dim32_15scene_2scale_layer6 \
     --scenes_path PATH_TO_PROCESSED_SCENE_DATASET \
     --object_path PATH_TO_PROCESSED_OBJECT_DATASET \
     --image_height 1080 --image_width 1920 --embed_dim 32 --random_ratio 1 \

@@ -69,7 +69,7 @@ def get_parser():
                         help='If true, pin memory when using the data loader.')
     parser.add_argument('--print-freq', default=10, type=int, help='print frequency')
     parser.add_argument('--data_path', default='renders/lego/lego_960_540_2x3_FOV50_60', help='dataset root directory') 
-    parser.add_argument('--scenes_path', default='/inspire/hdd/ws-f4d69b29-e0a5-44e6-bd92-acf4de9990f0/public-project/maweijie-240108120091/ssd/data/eyeReal', help='scenes root directory') 
+    parser.add_argument('--scenes_path', default='./dataset/scenes', help='scenes root directory') 
     
     parser.add_argument('--resume', default='', help='resume from checkpoint')
     parser.add_argument('--ckpt_weights', default='', )
@@ -102,7 +102,7 @@ def get_parser():
 
 import argparse
 def get_gaussian_parser():
-    parser = argparse.ArgumentParser(description='eyeReal')
+    parser = argparse.ArgumentParser(description='EyeReal')
 
     return parser
 

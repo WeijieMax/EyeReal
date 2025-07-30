@@ -232,7 +232,7 @@ class SceneDataset(Dataset):
         self.scene_list = os.listdir(self.scenes_path)
         if 'val' in scenes_path:
             self.suffix = '1_scale_0.07_R_125_280_FOV_40_theta_40_140_phi_10_70'      # TODO: Change Here!
-        elif 'Eyereal_paper' in scenes_path:
+        elif 'EyeReal_paper' in scenes_path:
             self.suffix = ''
         else:
             self.suffix = '500_scale_0.07_R_125_280_FOV_40_theta_40_140_phi_10_70'      # TODO: Change Here!

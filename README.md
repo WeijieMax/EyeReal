@@ -39,24 +39,12 @@ export PYTHONPATH=/path/to/EyeReal
 ## Generate light field
 Our processed data can be downloaded from [Huggingface](https://huggingface.co/datasets/WeijieMa/EyeReal/tree/main).
 
-### Download and Extract Data
-
 ```bash
 export HF_ENDPOINT="https://hf-mirror.com"
 pip install -U huggingface_hub
 
 huggingface-cli download --resume-download --repo-type dataset WeijieMa/EyeReal --local-dir ./dataset/EyeReal
 ```
-
-After downloading, you will have the following files:
-- `eval.zip`
-- `pretrained_model.pth`
-- `scene_data.tar.gz.part-aa`, `scene_data.tar.gz.part-ab`
-- `uco3d_data.tar.gz.part-aa`, `uco3d_data.tar.gz.part-ab`, `uco3d_data.tar.gz.part-ac`, `uco3d_data.tar.gz.part-ad`, `uco3d_data.tar.gz.part-ae`
-- `uco3d_processed_disrupt_train.zip`
-- `uco3d_processed_disrupt_val.zip`
-- `uco3d_processed_train_sample.zip`
-- `uco3d_processed_val_sample.zip`
 
 Combine the split files and extract:
 ```bash
@@ -76,13 +64,7 @@ unzip uco3d_processed_train_sample.zip
 unzip uco3d_processed_val_sample.zip
 ```
 
-For uco3d files, download the uco3d dataset and unzip it into:
-![files](assets/image.png)
-
-```bash
-python data/data_preparation_uco3d.py
-python data/data_preparation_uco3d_disrupt.py # disrupt head pose
-```
+### Customized generation
 
 If you want to process your own data, for .ply files:
 
@@ -105,6 +87,13 @@ If you want to process your own data, for .ply files:
 python data/data_preparation.py
 python data/data_preparation_disrupt.py # disrupt head pose
 ```
+For uco3d series, download the uco3d dataset and unzip it into:
+![files](assets/image.png)
+
+```bash
+python data/data_preparation_uco3d.py
+python data/data_preparation_uco3d_disrupt.py # disrupt head pose
+```
 
 
 ## Training
@@ -118,20 +107,20 @@ sh train.sh
 ## Inference
 We provide two inference methods: one based on user-specified coordinates and another based on a pair of input images.
 The model weights can be downloaded from [Huggingface](https://huggingface.co/datasets/WeijieMa/EyeReal/tree/main).
-Change the `eyeRealNet_weights` to the path to pretrained_model.pth.
+Change the `EyeRealNet_weights` to the path to pretrained_model.pth.
 ### Inference Based on Coordinates
 ```bash
 # Script: inference_coordinates.py
-# - Update `eyeRealNet_weights` with your trained weights.
+# - Update `EyeRealNet_weights` with your trained weights.
 # - Modify `gaussian_path` to point to the .ply file corresponding to your light field data.
 # - Set `mid_coord` to the desired viewpoint position in the world coordinate system (in centimeters).
 python inference_coordinates.py
 ```
 ### Inference Based on Input Images
-Change the `eyeRealNet_weights` to the path to pretrained_model.pth.
+Change the `EyeRealNet_weights` to the path to pretrained_model.pth.
 ```bash
 # Script: inference_figures.py
-# - Update `eyeRealNet_weights` with your trained weights.
+# - Update `EyeRealNet_weights` with your trained weights.
 # - Provide a pair of images for the viewpoints by setting the paths for `data_path`, `left_eye_path`, and `right_eye_path`.
 python inference_figures.py
 ```
@@ -151,8 +140,8 @@ python eval/evaluate.py --ckpt_weights PRETRAINED_MODEL.pth --val_root /path/to/
 
 ## Experiment
 
-First, put the pretrained_model.pth  in the path weight\model_ckpts\pretrained_model.pth\
-Then, put the eval dataset in the path dataset\eval\lego_bulldozer
+First, put the pretrained_model.pth  in the path ./weight/model_ckpts/pretrained_model.pth\
+Then, put the eval dataset in the path ./dataset/eval/lego_bulldozer
 
 ### Seamless ultrawide visualization
 

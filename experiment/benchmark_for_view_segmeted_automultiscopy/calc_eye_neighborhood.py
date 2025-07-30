@@ -441,8 +441,8 @@ args.model_choice = 0
 
 init_scene_args(args=args)
 
-args.ckpt_weights = r"weight\model_ckpts\pretrained_model.pth"
-gaussians_path = 'weight\gaussian_ply\lego_bulldozer.ply'
+args.ckpt_weights = r"./weight/model_ckpts/pretrained_model.pth"
+    gaussians_path = './weight/gaussian_ply/lego_bulldozer.ply'
 model = load_model(args)
 render = get_gaussian_render(args.FOV, gaussians_path)
 transform = get_transform(args=args)

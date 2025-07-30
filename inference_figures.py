@@ -140,13 +140,13 @@ def get_img_matrix(s, vertical, delta):
     eye_world = torch.tensor([ori_x, ori_y, ori_z])
     return eye2world_pytroch(vertical=vertical, eye_world=eye_world, delta=delta)
 
-def load_inference(eyeRealNet_weights, save_path, data_path, left_eye_path, right_eye_path, args, coord_screen_world):
+def load_inference(EyeRealNet_weights, save_path, data_path, left_eye_path, right_eye_path, args, coord_screen_world):
     os.makedirs(save_path, exist_ok=True)
     FOV = args.FOV
     if FOV > math.pi: 
         FOV = FOV / 180 * math.pi
     model = EyeRealNet(args=args, FOV=FOV)
-    model.load_state_dict(torch.load(eyeRealNet_weights, map_location='cpu')['model'])
+    model.load_state_dict(torch.load(EyeRealNet_weights, map_location='cpu')['model'])
     model = model.cuda()
     model.eval()
     transform = get_transform(args=args)
@@ -187,11 +187,11 @@ if __name__ == "__main__":
     coord_screen_world = init_scene_args(args=args)
 
     save_path = r"./outputs/figures/{}/".format(args.scene)
-    eyeRealNet_weights = r"path/to/pretrained_model.pth"
-    data_path = r'dataset/demo/lego_bulldozer/'
+    EyeRealNet_weights = r"path/to/pretrained_model.pth"
+    data_path = r'./dataset/demo/lego_bulldozer/'
     left_eye_path = "pair0_x6.487_y0.237_z2.004_0.jpg"
     right_eye_path = "pair0_x6.486_y-0.263_z2.004_1.jpg"
 
     os.makedirs(save_path, exist_ok=True)
-    load_inference(eyeRealNet_weights=eyeRealNet_weights, 
+    load_inference(EyeRealNet_weights=EyeRealNet_weights, 
                    data_path=data_path, left_eye_path=left_eye_path, right_eye_path=right_eye_path, save_path=save_path, args=args, coord_screen_world=coord_screen_world)

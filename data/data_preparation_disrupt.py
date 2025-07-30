@@ -4,7 +4,7 @@ import torch
 import os
 from data.render import GaussianRender
 from dataset import eye2world_pytroch
-from train_eyeReal import init_scene_args
+from train_EyeReal import init_scene_args
 from config.args import get_gaussian_parser
 
 import numpy as np
@@ -120,7 +120,7 @@ def randomize(vertical, orientation, scale_physical2world):
 
 if __name__ == "__main__":
 
-    root = 'weight/gaussian_ply'
+    root = './weight/gaussian_ply'
     for gs in os.listdir(root):
         gaussian_path = os.path.join(root, gs)
         render = GaussianRender(
@@ -138,7 +138,7 @@ if __name__ == "__main__":
         args.scene = scene_name
         init_scene_args(args=args)
 
-        file_path = 'dataset/scene_data_disrupt/{}/'.format(args.scene)
+        file_path = './dataset/scene_data_disrupt/{}/'.format(args.scene)
 
         if 'museum' in scene_name or 'room_floor' in scene_name:
             num = 1500

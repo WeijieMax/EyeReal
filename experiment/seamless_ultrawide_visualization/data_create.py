@@ -97,11 +97,11 @@ if __name__ == "__main__":
     render = GaussianRender(
         parser=get_parser(),
         sh_degree=3, 
-        gaussians_path=r'weight\gaussian_ply\lego_bulldozer.ply',
+        gaussians_path=r'./weight/gaussian_ply/lego_bulldozer.ply',
         white_background=True, FOV=FOV / 180 * math.pi)
     
 
-    file_path = r'outputs\experiment\3D-distribute'
+    file_path = './outputs/experiment/3D-distribute'
 
     data_folder = r'lego_bulldozer{}_scale_{}_R_{}_{}_FOV_{}_theta_{}_phi_{}'.format(num, round(scale,3), R_min, R_max, FOV, round(theta_max/2, 2), round(phi_max/2, 2))
     data_path = os.path.join(file_path, data_folder)

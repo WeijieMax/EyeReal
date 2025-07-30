@@ -210,7 +210,7 @@ def load_ckpt_calc(args, ckpt):
     world_t = torch.stack(world_ls)
 
     exp_name = 'your_exp_name'
-    output_path = r'outputs\experiment\3D-distribute/' + exp_name
+    output_path = './outputs/experiment/3D-distribute/' + exp_name
     os.makedirs(output_path, exist_ok=True)
     torch.save(ssim_t, output_path + "/" + "{}_ssim.pt".format(exp_name))
     torch.save(psnr_t, output_path + "/" + "{}_psnr.pt".format(exp_name))
@@ -221,7 +221,7 @@ def load_ckpt_calc(args, ckpt):
         f.write("{}_avg_ssim: {}\n".format( exp_name, torch.mean(ssim_t)))
 
 
-ckpt = r'weight\model_ckpts\pretrained_model.pth'
-args.data_path = r"outputs\experiment\3D-distribute\lego_bulldozer40000_scale_0.083_R_0_400_FOV_40_theta_1.22_phi_1.22"
+    ckpt = r'./weight/model_ckpts/pretrained_model.pth'
+args.data_path = "./outputs/experiment/3D-distribute/lego_bulldozer40000_scale_0.083_R_0_400_FOV_40_theta_1.22_phi_1.22"
 args.N_screen = 3
 load_ckpt_calc(args, ckpt)

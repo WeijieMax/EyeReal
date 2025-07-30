@@ -188,7 +188,7 @@ def update_two_views(model:DisplayNetNTF, iteration, data, device, output_path):
         render = GaussianRender(
             parser=get_gaussian_parser(),
             sh_degree=3, 
-            gaussians_path=r"weight\gaussian_ply\lego_bulldozer.ply",
+            gaussians_path=r"./weight/gaussian_ply/lego_bulldozer.ply",
             white_background=True, FOV=40 / 180 * math.pi, render_image_size=(1080,1920))
         exe_time = 0
 
@@ -279,7 +279,7 @@ args = parser.parse_args()
 
 args.scene = 'lego_bulldozer'
 args.data_path = ''
-args.output_dir = "outputs\experiment/NTF/"
+args.output_dir = "./outputs/experiment/NTF/"
 args.image_height = 1080
 args.image_width = 1920
 args.exp_name = ""
