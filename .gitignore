@@ -3,5 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Wandb and output files
+wandb/
+output/
+.vscode/
+
 # macOS
 .DS_Store
