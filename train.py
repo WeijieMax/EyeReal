@@ -308,7 +308,7 @@ if __name__ == "__main__":
 
     if args.wandb:
         import wandb
-        wandb.init(project=args.model_id, name=args.exp_name, dir=args.wandb_dir, mode='offline')
+        wandb.init(project=args.wandb_name, name=args.exp_name, dir=args.wandb_dir, mode='offline')
     
     main(args)
 

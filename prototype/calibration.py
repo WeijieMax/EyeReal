@@ -10,7 +10,7 @@ import warnings
 from copy import deepcopy as c
 import random
 from config.args import get_parser
-from train_EyeReal import init_scene_args
+from train import init_scene_args
 from model.network import EyeRealNet
 from data.dataset import eye2world_pytroch
 warnings.filterwarnings('ignore')

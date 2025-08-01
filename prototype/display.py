@@ -14,7 +14,7 @@ import warnings
 import argparse
 from copy import deepcopy as c
 from data.dataset import eye2world_pytroch
-from train_EyeReal import init_scene_args
+from train import init_scene_args
 from config.args import get_parser, get_gaussian_parser
 warnings.filterwarnings('ignore')
 

@@ -1,6 +1,6 @@
 import sys
 from lib.NTF.train_NTF import *
-from train_EyeReal import *
+from train import *
 from data.dataset import *
 from config.args import get_parser
 from config.scene_dict import scene_dict

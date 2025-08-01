@@ -15,7 +15,7 @@ from plyfile import PlyData, PlyElement
 
 from data.render import GaussianRender
 from dataset import eye2world_pytroch
-from train_EyeReal import init_scene_args
+from train import init_scene_args
 from config.args import get_gaussian_parser
 from config.args import get_parser
 

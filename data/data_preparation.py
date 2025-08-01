@@ -4,7 +4,7 @@ import torch
 import os
 from data.render import GaussianRender
 from dataset import eye2world_pytroch
-from train_EyeReal import init_scene_args
+from train import init_scene_args
 from config.args import get_gaussian_parser
 
 import numpy as np
