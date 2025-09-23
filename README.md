@@ -1,6 +1,33 @@
 # EyeReal
 
-Realtime Glasses-Free 3D Display with Seamless Ultrawide Viewing Range using Deep Learning
+Glasses-Free 3D Display with Ultrawide Viewing Range using Deep Learning
+
+## Table of Contents
+
+- [Additional Materials](#additional-materials)
+  - [EyeReal autostereoscopic results in game (Minecraft)](#eyereal-autostereoscopic-results-in-game-minecraft)
+  - [Seamless viewing transition - Realtime recording](#seamless-viewing-transition---realtime-recording)
+  - [Dynamic content display - Realtime recording](#dynamic-content-display---realtime-recording)
+- [Installation](#installation)
+- [Generate light field](#generate-light-field)
+- [Training](#training)
+- [Inference](#inference)
+- [Eval](#eval)
+- [Experiment](#experiment)
+
+## Additional Materials
+
+### EyeReal autostereoscopic results in game (Minecraft)
+
+![Minecraft Results](assets/minecraft_aerial_around.pdf)
+
+### Seamless viewing transition - Realtime recording
+
+![Seamless Viewing](assets/seamless_ultrawide_viewing.mp4)
+
+### Dynamic content display - Realtime recording
+
+![Dynamic Content](assets/dynamic_content_display.mp4)
 
 ## Installation
 
@@ -89,7 +116,7 @@ python data/data_preparation_disrupt.py # disrupt head pose
 ```
 For uco3d series, download the uco3d dataset and unzip it into:
 
-![files](assets/image.png)
+<img src="assets/uco3d_folder.png" alt="files" width="400">
 
 ```bash
 python data/data_preparation_uco3d.py
@@ -170,6 +197,14 @@ python experiment\focal_discrimination\calc_focal_stack.py
 
 ```
 
+### Benchmark for view-dense automultiscopy (Iterative representative)
+
+
+```bash
+# calculate psnr
+python experiment\benchmark_for_view_dense_automultiscopy_iterative\calc_NTF.py
+```
+
 ### Benchmark for view-dense automultiscopy (Neural representative)
 
 First, need install some packages
@@ -183,17 +218,9 @@ python -m cupyx.tools.install_library --library cudnn --cuda 11.x
 
 ```bash
 # data preparation
-python experiment\benchmark_for_view_dense_automultiscopy_neural\data_create_DNN.py
+python experiment\benchmark_for_view_dense_automultiscopy_neural\data_create_NVD.py
 # calculate psnr
-python experiment\benchmark_for__view_dense_automultiscopy_neural\calc_DNN.py
+python experiment\benchmark_for__view_dense_automultiscopy_neural\calc_NVD.py
 #calculate time
-python experiment\benchmark_for_view_dense_automultiscopy_neural\time_DNN.py
-```
-
-### Benchmark for view-dense automultiscopy (Iterative representative)
-
-
-```bash
-# calculate psnr
-python experiment\benchmark_for_view_dense_automultiscopy_iterative\calc_NTF.py
+python experiment\benchmark_for_view_dense_automultiscopy_neural\time_NVD.py
 ```
