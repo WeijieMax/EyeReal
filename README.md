@@ -19,15 +19,15 @@ Glasses-Free 3D Display with Ultrawide Viewing Range using Deep Learning
 
 ### EyeReal autostereoscopic results in game (Minecraft)
 
-![Minecraft Results](assets/minecraft_aerial_around.pdf)
+![Minecraft Results](assets/minecraft_aerial_around.png)
 
 ### Seamless viewing transition - Realtime recording
 
-![Seamless Viewing](assets/seamless_ultrawide_viewing.mp4)
+[![Seamless Viewing](assets/seamless_ultrawide_viewing.gif)](assets/seamless_ultrawide_viewing.mp4)
 
 ### Dynamic content display - Realtime recording
 
-![Dynamic Content](assets/dynamic_content_display.mp4)
+[![Dynamic Content](assets/dynamic_content_display.gif)](assets/dynamic_content_display.mp4)
 
 ## Installation
 
