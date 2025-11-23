@@ -128,6 +128,7 @@ python data/data_preparation_uco3d_disrupt.py # disrupt head pose
 ```bash
 # After completing the previous steps, you should have the desired light field data images ready.
 # you should modify the paramater --scenes_path and --object_path in train.sh
+# you can follow the instruction in the train.sh to use all data/specified data
 # Execute the modified script in train.sh the terminal
 sh train.sh
 ```
