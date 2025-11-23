@@ -239,7 +239,7 @@ def main():
             frame_data = dataset[dataset_idx]
         
 
-            file_path = '/fs-computility/ai4chem/maweijie/uco3d_processed_train_sample/{}/'.format(seq_name)
+            file_path = 'your_path/uco3d_processed_train_sample/{}/'.format(seq_name)
             data_folder = '{}{}_scale_{}_R_{}_{}_FOV_{}_theta_{}_{}_phi_{}_{}'.format(
                 seq_name, num, round(args.scale_physical2world,3), 
                 R_min, R_max, FOV, theta_min, theta_max, phi_min, phi_max)
