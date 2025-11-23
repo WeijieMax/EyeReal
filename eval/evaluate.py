@@ -1,5 +1,5 @@
 import sys
-from lib.NTF.train_NTF import *
+from model.metric import *
 from train import *
 from data.dataset import *
 from config.args import get_parser
@@ -15,7 +15,7 @@ from tqdm import trange
 import gc
 import time
 
-scene_dict_uco3d = {
+object_dict = {
     "scale_physical2world":0.28,
     "thickness":6,
     "vertical":"y",
@@ -30,7 +30,7 @@ def init_scene_args(args, dataset_name=None):
         print(f"Using scene_dict configuration for dataset: {dataset_name}")
         # arg_dict['scale_physical2world'] = 0.5/6
     else:
-        arg_dict = scene_dict_uco3d
+        arg_dict = object_dict
         print(f"Using default uco3d configuration for dataset: {dataset_name}")
 
     args.scale_physical2world = arg_dict["scale_physical2world"]

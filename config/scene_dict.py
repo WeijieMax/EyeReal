@@ -169,7 +169,7 @@ scene_dict = {
 }
 scene_id2key = list(scene_dict.keys())
 
-scene_dict_uco3d = {
+object_dict = {
     "scale_physical2world":0.21,
     "thickness":6,
     "vertical":"y",

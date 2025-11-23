@@ -239,7 +239,7 @@ def init_scene_args_numpy(args):
     if args.scene in scene_dict:
         arg_dict = scene_dict[args.scene]
     else:
-        arg_dict = scene_dict_uco3d.copy()  # Avoid modifying original global dict
+        arg_dict = object_dict.copy()  # Avoid modifying original global dict
         arg_dict["scale_physical2world"] = 0.28
 
     args.scale_physical2world = arg_dict["scale_physical2world"]

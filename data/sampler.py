@@ -224,6 +224,8 @@ class DualDatasetSampler(Sampler[T_co]):
         else:
             # Number of d1 items per replica
             self.num_samples = math.ceil(self.total_length / self.num_replicas)
+            if self.num_samples % self.samples_per_dataset != 0:
+                self.num_samples = math.ceil(self.num_samples / self.samples_per_dataset) * self.samples_per_dataset
         
         # Total d1 items across all replicas after DDP adjustment
         self.total_size = self.num_samples * self.num_replicas

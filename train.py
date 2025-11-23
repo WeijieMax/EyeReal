@@ -15,24 +15,48 @@ import warnings
 from config.scene_dict import *
 from model.loss import get_aux_loss
 from data.dataset import CombinedDataset
-
+from data.dataset import EyeRealDataset
 warnings.filterwarnings('ignore')
 
 
-def get_scene_dataset(transform, args, idx=None):
-   from data.dataset import SceneDataset
+def get_choose_subdataset_names(use_scene=False, use_object=False, scenes_path=None, object_path=None, use_scene_all=False, use_object_all=False, choose_scene_names=None, choose_object_names=None):
+    choose_scene_names_list = []
+    choose_object_names_list = []
+    if use_scene:
+        if use_scene_all:
+            choose_scene_names_list = os.listdir(scenes_path)
+        else:
+            choose_scene_names_list = choose_scene_names.split(',')
+    if use_object:
+        if use_object_all:
+            choose_object_names_list = os.listdir(object_path)
+        else:
+            choose_object_names_list = choose_object_names.split(',')
+    return choose_scene_names_list, choose_object_names_list
 
-   ds = SceneDataset(scenes_path = args.scenes_path, 
+def get_scene_dataset(transform, args, choose_subdataset_names=None):
+   
+
+   ds = EyeRealDataset(data_root_path = args.scenes_path, 
                     transform=transform, 
-                    pattern_size=(args.image_height, args.image_width))
+                    pattern_size=(args.image_height, args.image_width),
+                    N_screen=args.N_screen,
+                    data_mode='scene',
+                    suffix='',
+                    use_all=args.use_scene_all,
+                    choose_subdataset_names=choose_subdataset_names)
    return ds
 
-def get_object_dataset(transform, args, idx=None):
-   from data.dataset import SceneDataset
+def get_object_dataset(transform, args, choose_subdataset_names=None):
 
-   ds = SceneDataset(scenes_path = args.object_path,
+   ds = EyeRealDataset(data_root_path = args.object_path,
                     transform=transform,
-                    pattern_size=(args.image_height, args.image_width))
+                    pattern_size=(args.image_height, args.image_width),
+                    N_screen=args.N_screen,
+                    data_mode='object',
+                    suffix=args.object_suffix,
+                    use_all=args.use_object_all,
+                    choose_subdataset_names=choose_subdataset_names)
    return ds
 
 def get_transform(args):
@@ -178,37 +202,123 @@ def train_one_epoch(args, model: EyeRealNet, optimizer, data_loader, lr_schedule
 
 def main(args):
 
-    scene_dataset = get_scene_dataset(get_transform(args=args), args=args)
-    object_dataset = get_object_dataset(get_transform(args=args), args=args)
-
-    combined_dataset = CombinedDataset(scene_dataset, object_dataset)
     workers = min([os.cpu_count(), args.batch_size if args.batch_size > 1 else 0, 
                    args.workers if not args.debug else 0])
-
-    sampler = DualDatasetSampler(
-        dataset1=scene_dataset,
-        dataset2=object_dataset,
-        batch_size=4,          
-        shuffle=True,
-        random_ratio=1.0,      
-        drop_last=False
+    choose_scene_names_list, choose_object_names_list = get_choose_subdataset_names(
+        use_scene=args.use_scene,
+        use_object=args.use_object,
+        scenes_path=args.scenes_path,
+        object_path=args.object_path,
+        use_scene_all=args.use_scene_all,
+        use_object_all=args.use_object_all,
+        choose_scene_names=args.choose_scene_names,
+        choose_object_names=args.choose_object_names
     )
-
-    data_loader = torch.utils.data.DataLoader(
-        combined_dataset,           
-        batch_size=args.batch_size,
-        sampler=sampler,           
-        collate_fn=CombinedDataset.collate_fn,
-        num_workers=workers,
-        pin_memory=args.pin_mem,
-        drop_last=True
-    )
+    if args.use_scene:
+        scene_dataset = get_scene_dataset(get_transform(args=args), args=args, choose_subdataset_names=choose_scene_names_list)
+    else:
+        scene_dataset = None
+    if args.use_object:
+        object_dataset = get_object_dataset(get_transform(args=args), args=args, choose_subdataset_names=choose_object_names_list)
+    else:
+        object_dataset = None
 
 
+    # Check if at least one dataset is specified
+    if scene_dataset is None and object_dataset is None:
+        raise ValueError("at least one dataset is required! Please use --use_scene or --use_object parameters")
 
-    print(len(data_loader), len(scene_dataset))
+    # Choose different loading methods based on dataset availability
+    if scene_dataset is not None and object_dataset is not None:
+        # Both datasets exist
+        print("=" * 60)
+        print("Using Scene and Object two datasets")
+        print("=" * 60)
+        
+        combined_dataset = CombinedDataset(scene_dataset, object_dataset)
+        
+        sampler = DualDatasetSampler(
+            dataset1=scene_dataset,
+            dataset2=object_dataset,
+            batch_size=args.batch_size,          
+            shuffle=True,
+            random_ratio=1.0,      
+            drop_last=False
+        )
+        
+        data_loader = torch.utils.data.DataLoader(
+            combined_dataset,           
+            batch_size=args.batch_size,
+            sampler=sampler,           
+            collate_fn=CombinedDataset.collate_fn,
+            num_workers=workers,
+            pin_memory=args.pin_mem,
+            drop_last=True
+        )
+        
+        dataset = combined_dataset
+        
+    elif scene_dataset is not None:
+        # Only scene_dataset
+        print("=" * 60)
+        print("Using Scene dataset")
+        print("=" * 60)
+        
+        
+        
+        sampler = DistributedRandomSampler(
+            scene_dataset,     
+            shuffle=True,
+            drop_last=False,
+            random_ratio=args.random_ratio if hasattr(args, 'random_ratio') else 1.0
+        )
+        
+        data_loader = torch.utils.data.DataLoader(
+            scene_dataset,
+            batch_size=args.batch_size,
+            sampler=sampler,
+            collate_fn=EyeRealDataset.collate_fn,
+            num_workers=workers,
+            pin_memory=args.pin_mem,
+            drop_last=True
+        )
+        
+        dataset = scene_dataset
+        
+    else:
+        # Only object_dataset
+        print("=" * 60)
+        print("Using Object dataset")
+        print("=" * 60)
+        
+        
+
+        sampler = DistributedRandomSampler(
+            object_dataset,     
+            shuffle=True,
+            drop_last=False,
+            random_ratio=args.random_ratio if hasattr(args, 'random_ratio') else 1.0
+        )
+        
+        data_loader = torch.utils.data.DataLoader(
+            object_dataset,
+            batch_size=args.batch_size,
+            sampler=sampler,
+            collate_fn=EyeRealDataset.collate_fn,
+            num_workers=workers,
+            pin_memory=args.pin_mem,
+            drop_last=True
+        )
+        
+        dataset = object_dataset
+
+
+
+    print(f"Data loader batch size: {len(data_loader)}, dataset size: {len(dataset)}")
+
+
+    print(len(data_loader), len(dataset))
     assert len(data_loader) > 0, 'len(dataset) must >= batch_size * gpus'
-    cam_distance = 24
     FOV = args.FOV
     if FOV > math.pi:
         FOV = FOV / 180 * math.pi
