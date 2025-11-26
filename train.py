@@ -16,52 +16,10 @@ from config.scene_dict import *
 from model.loss import get_aux_loss
 from data.dataset import CombinedDataset
 from data.dataset import EyeRealDataset
+from inference_coordinates import *
 warnings.filterwarnings('ignore')
 
 
-def init_scene_args(args):
-
-    if args.scene in scene_dict:
-        arg_dict = scene_dict[args.scene]
-    else:
-        arg_dict = object_dict
-        arg_dict["scale_physical2world"] = 0.28
-    args.scale_physical2world = arg_dict["scale_physical2world"]
-    args.thickness = arg_dict["thickness"]
-    args.vertical = arg_dict["vertical"]
-    args.orientation = arg_dict["orientation"]
-
-    if "physical_width" in arg_dict:
-        args.physical_width = arg_dict["physical_width"]
-    if "ground_coefficient" in arg_dict:
-        args.ground_coefficient = arg_dict["ground_coefficient"]
-    if "ground" in arg_dict:
-        args.ground = arg_dict["ground"]
-    if "delta_x" in arg_dict:
-        args.delta_x = arg_dict["delta_x"]
-    if "delta_y" in arg_dict:
-        args.delta_y = arg_dict["delta_y"]
-    if "delta_z" in arg_dict:
-        args.delta_z = arg_dict["delta_z"]
-
-    print(arg_dict)
-
-    delta = torch.tensor([0, 0, 0])
-    delta[0] = arg_dict.get('delta_x') if arg_dict.get('delta_x') else 0
-    delta[1] = arg_dict.get('delta_y') if arg_dict.get('delta_x') else 0
-    delta[2] = arg_dict.get('delta_z') if arg_dict.get('delta_x') else 0
-    
-    coord_screen_world = get_screen_coords_world(
-        thickness = arg_dict.get('thickness'), 
-        scale_physical2world = arg_dict.get('scale_physical2world'), 
-        physical_width = arg_dict.get('physical_width'), 
-        ground = arg_dict.get('ground'), 
-        ground_coefficient = arg_dict.get('ground_coefficient'), 
-        orientation = arg_dict.get('orientation'), 
-        delta = delta
-    )
-
-    return coord_screen_world
 def get_choose_subdataset_names(use_scene=False, use_object=False, scenes_path=None, object_path=None, use_scene_all=False, use_object_all=False, choose_scene_names=None, choose_object_names=None):
     choose_scene_names_list = []
     choose_object_names_list = []
