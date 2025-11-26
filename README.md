@@ -32,11 +32,12 @@ Glasses-Free 3D Display with Ultrawide Viewing Range using Deep Learning
 ## Installation
 
 ```bash
+# python 3.9+
 # Install torch
-pip install torch==2.1.2+cu118 torchvision==0.16.2+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
+pip install torch torchvision --extra-index-url https://download.pytorch.org/whl/cu124
 
 # Prepare CUDA
-conda install -c "nvidia/label/cuda-11.8.0" cuda-toolkit
+conda install -c "nvidia/label/cuda-12.4.0" cuda-toolkit
 
 # Install GS
 cd lib/GS/submodules
