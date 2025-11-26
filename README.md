@@ -52,6 +52,11 @@ pip install lib/GS/submodules/simple-knn
 
 # Install other dependencies
 ```bash
+#  uco3d
+git clone https://github.com/facebookresearch/uco3d.git
+cd uco3d
+pip install -e .
+# others
 pip install opencv-python tqdm plyfile wandb
 ```
 
