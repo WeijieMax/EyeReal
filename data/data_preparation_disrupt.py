@@ -106,7 +106,7 @@ def randomize(vertical, orientation, scale_physical2world):
         y2 = round(r*math.sin(theta+delta), 3)
         z1 = round(r*math.cos(theta-delta), 3) 
         z2 = round(r*math.cos(theta+delta), 3)
-    (x1, y1, z1), (x2, y2, z2) = (x1, y1, z1), (x2, y2, z2)
+
 
     (x1, y1, z1), (x2, y2, z2) = _apply_head_pose_noise(
         (x1, y1, z1),
