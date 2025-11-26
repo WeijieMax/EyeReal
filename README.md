@@ -32,7 +32,7 @@ Glasses-Free 3D Display with Ultrawide Viewing Range using Deep Learning
 ## Installation
 
 ```bash
-# python>3.8
+# python 3.9+
 # Install torch
 pip install torch==2.1.2+cu118 torchvision==0.16.2+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
 
