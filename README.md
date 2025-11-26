@@ -221,7 +221,7 @@ python -m cupyx.tools.install_library --library cudnn --cuda 11.x
 # data preparation
 python experiment\benchmark_for_view_dense_automultiscopy_neural\data_create_NVD.py
 # calculate psnr
-python experiment\benchmark_for__view_dense_automultiscopy_neural\calc_NVD.py
+python experiment\benchmark_for_view_dense_automultiscopy_neural\calc_NVD.py
 #calculate time
 python experiment\benchmark_for_view_dense_automultiscopy_neural\time_NVD.py
 ```
