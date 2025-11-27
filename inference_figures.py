@@ -34,6 +34,10 @@ def get_screen_coords_world(thickness, scale_physical2world, physical_width, gro
         # print(f"Z_world: {Z_world}, type: {type(Z_world)}")
         
         z_max = (z_min + Z_world)
+        
+        z_min = z_min - Z_world / 2
+        z_max = z_max + Z_world / 2
+        
         W_w = W * scale_pixel2world
         H_w = H * scale_pixel2world
         
