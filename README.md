@@ -46,8 +46,8 @@ cd diff-gaussian-rasterization
 git checkout d986da0d4cf2dfeb43b9a379b6e9fa0a7f3f7eea
 git submodule update --init --recursive
 cd ../../../..
-pip install lib/GS/submodules/diff-gaussian-rasterization
-pip install lib/GS/submodules/simple-knn
+pip install lib/GS/submodules/diff-gaussian-rasterization or pip install --no-build-isolation lib/GS/submodules/diff-gaussian-rasterization
+pip install lib/GS/submodules/simple-knn or pip install --no-build-isolation lib/GS/submodules/simple-knn
 ``` 
 
 # Install other dependencies
